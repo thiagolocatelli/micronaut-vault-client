@@ -18,15 +18,18 @@ package io.micronaut.discovery.vault.config.client.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Vault Response Envelope
+ *  Vault Response Envelope
  *
- * @author Thiago Locatelli
- * @since 1.1.1
+ *  @author Thiago Locatelli
+ *  @author graemerocher
+ *  @since 1.1.1
  */
+@Immutable
 public class VaultResponse {
 
     private VaultResponseData data;

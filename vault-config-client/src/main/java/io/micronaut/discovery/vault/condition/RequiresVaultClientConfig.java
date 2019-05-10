@@ -25,12 +25,13 @@ import java.lang.annotation.*;
 /**
  * <p>Meta annotation for Vault Client Config requirements</p>
  *
- * @author Thiago Locatelli
- * @since 1.1.1
+ *  @author Thiago Locatelli
+ *  @author graemerocher
+ *  @since 1.1.1
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE})
 @Requires(property = VaultClientConstants.PREFIX)
-@Requires(property = VaultClientConstants.PREFIX + "." + ConfigDiscoveryConfiguration.PREFIX + ".enabled", value = "true", defaultValue = "false")
+@Requires(property = VaultClientConstants.PREFIX + "." + ConfigDiscoveryConfiguration.PREFIX + ".enabled", value = "true")
 public @interface RequiresVaultClientConfig { }

@@ -17,34 +17,54 @@
 package io.micronaut.discovery.vault.config.client.v1;
 
 import io.micronaut.discovery.vault.VaultClientConfiguration;
-import io.micronaut.discovery.vault.config.client.VaultConfigClient;
 import io.micronaut.discovery.vault.config.client.response.VaultResponse;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Produces;
 import io.micronaut.retry.annotation.Retryable;
 import org.reactivestreams.Publisher;
 
-/**
- * API operations for Vault Configuration - KV Version 1.
- *
- * @author Thiago Locatelli
- * @since 1.1.1
- */
-public interface VaultConfigV1Operations extends VaultConfigClient {
+import javax.annotation.Nonnull;
 
+/**
+ *  API operations for Vault Configuration - KV Version 1.
+ *
+ *  @author Thiago Locatelli
+ *  @author graemerocher
+ *  @since 1.1.1
+ */
+public interface VaultConfigV1Operations {
+
+    /**
+     * Reads an application configuration from Spring Config Server.
+     *
+     * @param backend           The name of the secret engine in Vault
+     * @param applicationName   The application name
+     * @return A {@link Publisher} that emits a list of {@link VaultResponse}
+     */
     @Get("/{backend}/{applicationName}")
     @Produces(single = true)
     @Retryable(
             attempts = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryCount:3}",
             delay = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryDelay:1s}"
     )
-    Publisher<VaultResponse> readConfiguratoinValues(String applicationName);
+    @Nonnull Publisher<VaultResponse> readConfiguratoinValues(@Nonnull String backend, @Nonnull String applicationName);
 
+    /**
+     * Reads an application configuration from Spring Config Server.
+     *
+     * @param backend           The name of the secret engine in Vault
+     * @param applicationName   The application name
+     * @param profile           The active profiles
+     * @return A {@link Publisher} that emits a list of {@link VaultResponse}
+     */
     @Get("/{backend}/{applicationName}/{profile}")
     @Produces(single = true)
     @Retryable(
             attempts = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryCount:3}",
             delay = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryDelay:1s}"
     )
-    Publisher<VaultResponse> readConfiguratoinValues(String backend, String applicationName, String profile);
+    @Nonnull Publisher<VaultResponse> readConfiguratoinValues(
+            @Nonnull String backend,
+            @Nonnull String applicationName,
+            @Nonnull String profile);
 }

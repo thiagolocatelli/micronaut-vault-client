@@ -16,6 +16,7 @@
 
 package io.micronaut.discovery.vault;
 
+import io.micronaut.context.annotation.BootstrapContextCompatible;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.discovery.config.ConfigDiscoveryConfiguration;
 import io.micronaut.discovery.vault.condition.RequiresVaultClientConfig;
@@ -25,13 +26,15 @@ import io.micronaut.runtime.ApplicationConfiguration;
 import javax.inject.Inject;
 
 /**
- * A {@link HttpClientConfiguration} for Vault Client.
+ *  A {@link HttpClientConfiguration} for Vault Client.
  *
  *  @author Thiago Locatelli
+ *  @author graemerocher
  *  @since 1.1.1
  */
 @RequiresVaultClientConfig
 @ConfigurationProperties(VaultClientConstants.PREFIX)
+@BootstrapContextCompatible
 public class VaultClientConfiguration extends HttpClientConfiguration {
 
     public static final String VAULT_CLIENT_CONFIG_ENDPOINT = "${" + VaultClientConstants.PREFIX + ".uri}";
@@ -57,15 +60,18 @@ public class VaultClientConfiguration extends HttpClientConfiguration {
     }
 
     @ConfigurationProperties(HttpClientConfiguration.ConnectionPoolConfiguration.PREFIX)
+    @BootstrapContextCompatible
     public static class VaultClientConnectionPoolConfiguration extends HttpClientConfiguration.ConnectionPoolConfiguration { }
 
     @ConfigurationProperties(ConfigDiscoveryConfiguration.PREFIX)
+    @BootstrapContextCompatible
     public static class VaultClientDiscoveryConfiguration extends ConfigDiscoveryConfiguration { }
 
-    private String uri = "http://locahost:8200";;
+    private String uri = "http://locahost:8200";
     private String token;
     private KV_VERSION kvVersion = KV_VERSION.V1;
     private String backend = "secret";
+    private boolean failFast;
 
     public String getUri() {
         return uri;
@@ -98,4 +104,13 @@ public class VaultClientConfiguration extends HttpClientConfiguration {
     public void setBackend(String backend) {
         this.backend = backend;
     }
+
+    public boolean isFailFast() {
+        return failFast;
+    }
+
+    public void setFailFast(boolean failFast) {
+        this.failFast = failFast;
+    }
+
 }

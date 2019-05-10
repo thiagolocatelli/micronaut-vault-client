@@ -22,14 +22,15 @@ import io.micronaut.discovery.vault.VaultClientConstants;
 import java.lang.annotation.*;
 
 /**
- * <p>Meta annotation for Vault Client Config requirements</p>
+ *  <p>Meta annotation for Vault Client Config requirements</p>
  *
- * @author Thiago Locatelli
- * @since 1.1.1
+ *  @author Thiago Locatelli
+ *  @author graemerocher
+ *  @since 1.1.1
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE})
 @Requires(property = VaultClientConstants.PREFIX)
-@Requires(property = VaultClientConstants.PREFIX + ".kv-version", value = "V1", defaultValue = "V1")
+@Requires(property = VaultClientConstants.PREFIX + ".kv-version", value = "V1")
 public @interface RequiresVaultClientConfigV1 { }

@@ -13,3 +13,4 @@ vault:
         token: vaulttoken
         kv-version: V1
         backend: backendv1
+        fail-fast: false

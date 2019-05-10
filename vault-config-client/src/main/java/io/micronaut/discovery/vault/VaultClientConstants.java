@@ -20,10 +20,12 @@ package io.micronaut.discovery.vault;
  *  Vault Client Constants
  *
  *  @author Thiago Locatelli
+ *  @author graemerocher
  *  @since 1.1.1
  */
 public class VaultClientConstants {
 
     public static final String PREFIX = "vault.client";
+    public static final String X_VAULT_TOKEN_HEADER = "X-Vault-Token";
 
 }

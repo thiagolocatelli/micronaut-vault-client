@@ -16,19 +16,24 @@
 
 package io.micronaut.discovery.vault.config.client.v2;
 
+import io.micronaut.context.annotation.BootstrapContextCompatible;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.discovery.vault.VaultClientConfiguration;
 import io.micronaut.discovery.vault.config.client.v2.condition.RequiresVaultClientConfigV2;
 import io.micronaut.http.client.annotation.Client;
 
 /**
- * Abstract implementation of {@link VaultConfigClientV2}.
+ *  A non-blocking HTTP client for Vault - KV v2.
  *
- * @author Thiago Locatelli
- * @since 1.1.1
+ *  @author Thiago Locatelli
+ *  @author graemerocher
+ *  @since 1.1.1
  */
 @Client(value = VaultClientConfiguration.VAULT_CLIENT_CONFIG_ENDPOINT, configuration = VaultClientConfiguration.class)
 @Requires(beans = VaultClientConfiguration.class)
 @RequiresVaultClientConfigV2
-public abstract class AbstractVaultConfigClientV2 implements VaultConfigClientV2 {
+@BootstrapContextCompatible
+public interface VaultConfigHttpClientV2 extends VaultConfigV2Operations {
+
+    String CLIENT_DESCRIPTION = "vault-config-client-v2";
 }

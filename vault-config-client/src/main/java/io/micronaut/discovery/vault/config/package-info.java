@@ -15,9 +15,10 @@
  */
 
 /**
- * Vault Client Configuration.
+ *  Vault Client Configuration.
  *
- * @author Thiago Locatelli
- * @since 1.1.1
+ *  @author Thiago Locatelli
+ *  @author graemerocher
+ *  @since 1.1.1
  */
 package io.micronaut.discovery.vault.config;

@@ -16,33 +16,36 @@
 
 package io.micronaut.discovery.vault.config.client.response;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.Map;
 
 /**
- * Vault Data object from {@link VaultResponse}
+ *  Vault Data object from {@link VaultResponse}
  *
- * @author Thiago Locatelli
- * @since 1.1.1
+ *  @author Thiago Locatelli
+ *  @author graemerocher
+ *  @since 1.1.1
  */
+@Immutable
 public class VaultResponseData {
 
-    private Map<String, String> data;
+    private Map<String, Object> data;
 
-    private Map<String, String> metadata;
+    private Map<String, Object> metadata;
 
-    public Map<String, String> getData() {
+    public Map<String, Object> getData() {
         return data;
     }
 
-    public void setData(Map<String, String> data) {
+    public void setData(Map<String, Object> data) {
         this.data = data;
     }
 
-    public Map<String, String> getMetadata() {
+    public Map<String, Object> getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(Map<String, String> metadata) {
+    public void setMetadata(Map<String, Object> metadata) {
         this.metadata = metadata;
     }
 }

@@ -7,7 +7,7 @@ import io.micronaut.http.annotation.Get;
 import java.util.HashMap;
 import java.util.Map;
 
-@Controller("/issues")
+@Controller
 public class DemoController {
 
     @Value("${vault-backend-key-one:LOCAL}")
