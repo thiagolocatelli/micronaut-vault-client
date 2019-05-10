@@ -1,0 +1,28 @@
+micronaut:
+    application:
+        name: vault-config-sample
+    server:
+        port: 8080
+
+application:
+    spring-config-sample:
+        prefix: application.yml
+
+endpoints:
+    beans:
+        enabled: true
+        sensitive: false
+        id: beans
+    info:
+        enabled: true
+        sensitive: false
+        id: info
+    health:
+        enabled: true
+        sensitive: false
+        details-visible: ANONYMOUS
+        id: health
+    routes:
+        enabled: true
+        sensitive: false
+        id: routes
