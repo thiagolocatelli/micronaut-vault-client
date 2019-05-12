@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 /**
  *  A {@link ConfigurationClient} for Vault Configuration.
  *
- *  @author Thiago Locatelli
+ *  @author thiagolocatelli
  *  @author graemerocher
  *  @since 1.1.1
  */

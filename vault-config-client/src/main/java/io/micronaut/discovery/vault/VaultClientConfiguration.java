@@ -28,7 +28,7 @@ import javax.inject.Inject;
 /**
  *  A {@link HttpClientConfiguration} for Vault Client.
  *
- *  @author Thiago Locatelli
+ *  @author thiagolocatelli
  *  @author graemerocher
  *  @since 1.1.1
  */

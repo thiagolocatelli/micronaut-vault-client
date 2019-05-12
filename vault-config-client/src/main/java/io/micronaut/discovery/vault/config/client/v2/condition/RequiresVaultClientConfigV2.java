@@ -24,7 +24,7 @@ import java.lang.annotation.*;
 /**
  *  <p>Meta annotation for Vault Client Config requirements</p>
  *
- *  @author Thiago Locatelli
+ *  @author thiagolocatelli
  *  @author graemerocher
  *  @since 1.1.1
  */

@@ -30,7 +30,7 @@ import org.reactivestreams.Publisher;
 /**
  *  Vault Http Filter used to set auth token header
  *
- *  @author Thiago Locatelli
+ *  @author thiagolocatelli
  *  @author graemerocher
  *  @since 1.1.1
  */

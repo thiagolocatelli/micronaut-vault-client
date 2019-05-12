@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
 /**
  *  A non-blocking HTTP client for Vault - KV v2.
  *
- *  @author Thiago Locatelli
+ *  @author thiagolocatelli
  *  @author graemerocher
  *  @since 1.1.1
  */

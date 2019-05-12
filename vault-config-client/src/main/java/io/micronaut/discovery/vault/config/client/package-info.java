@@ -17,7 +17,7 @@
 /**
  *  Vault Client Configuration.
  *
- *  @author Thiago Locatelli
+ *  @author thiagolocatelli
  *  @author graemerocher
  *  @since 1.1.1
  */
