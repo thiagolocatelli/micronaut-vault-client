@@ -37,7 +37,7 @@ public class VaultResponseData {
 
     @JsonCreator
     @Internal
-    protected VaultResponseData(@JsonProperty("data") Map<String, Object> data,
+    public VaultResponseData(@JsonProperty("data") Map<String, Object> data,
                                 @JsonProperty("source") Map<String, Object> metadata) {
 
         this.data = data == null ? Collections.emptyMap() : Collections.unmodifiableMap(data);

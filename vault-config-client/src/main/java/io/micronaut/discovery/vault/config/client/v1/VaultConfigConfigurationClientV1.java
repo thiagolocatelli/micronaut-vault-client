@@ -119,17 +119,17 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
             Publisher<? extends VaultResponseV1>> errorHandler) {
 
         String applicationName = getApplicationConfiguration().getName().get();
-        return activeNames.stream().map(activeName -> {
-            return activeName.equals(applicationName) ?
+        return activeNames.stream().map(activeName -> activeName.equals(applicationName) ?
                         Flowable.fromPublisher(
-                                vaultConfigClientV1.readConfigurationValues(getVaultClientConfiguration().getBackend(),
+                                vaultConfigClientV1.readConfigurationValues(
+                                        getVaultClientConfiguration().getBackend(),
                                         applicationName))
                                 .onErrorResumeNext(errorHandler) :
                         Flowable.fromPublisher(
-                                vaultConfigClientV1.readConfigurationValues(getVaultClientConfiguration().getBackend(),
+                                vaultConfigClientV1.readConfigurationValues(
+                                        getVaultClientConfiguration().getBackend(),
                                         applicationName, activeName))
-                                .onErrorResumeNext(errorHandler);
-        }).collect(Collectors.toList());
+                                .onErrorResumeNext(errorHandler)).collect(Collectors.toList());
     }
 
     private Function<Throwable, Publisher<? extends VaultResponseV1>>  getErrorHandler() {
