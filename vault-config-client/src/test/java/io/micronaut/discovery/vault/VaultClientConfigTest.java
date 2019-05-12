@@ -17,7 +17,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class VaultClientConfigTests {
+public class VaultClientConfigTest {
 
     private static EmbeddedServer vaultServer;
     private static HttpClient vaultServerHttpClient;
@@ -86,16 +86,13 @@ public class VaultClientConfigTests {
         assertTrue(response.getData().containsKey("vault-backend-key-one"));
         assertEquals(response.getData().get("vault-backend-key-one"), "vault-config-sample-prod");
 
-        assertTrue(response.getData().containsKey("vault-backend-kv-version"));
-        assertEquals(response.getData().get("vault-backend-kv-version"), "v1-prod");
-
         assertTrue(response.getData().containsKey("vault-backend-name"));
         assertEquals(response.getData().get("vault-backend-name"), "backendv1-prod");
     }
 
     @Test
     public void testReadValuesFromVaultServerV2() throws Exception {
-        HttpRequest request = HttpRequest.GET("/v1/backendv1/data/vault-config-sample/prod");
+        HttpRequest request = HttpRequest.GET("/v1/backendv2/data/vault-config-sample/prod");
         VaultResponseV2 response = vaultServerHttpClient.toBlocking().retrieve(request, VaultResponseV2.class);
 
         assertNotNull(response);
@@ -104,15 +101,12 @@ public class VaultClientConfigTests {
         assertTrue(response.getData().getData().containsKey("vault-backend-key-one"));
         assertEquals(response.getData().getData().get("vault-backend-key-one"), "vault-config-sample-prod");
 
-        assertTrue(response.getData().getData().containsKey("vault-backend-kv-version"));
-        assertEquals(response.getData().getData().get("vault-backend-kv-version"), "v1-prod");
-
         assertTrue(response.getData().getData().containsKey("vault-backend-name"));
-        assertEquals(response.getData().getData().get("vault-backend-name"), "backendv1-prod");
+        assertEquals(response.getData().getData().get("vault-backend-name"), "backendv2-prod");
     }
 
     @Test
-    public void testReadValuesFromApplicationServerV1() throws Exception {
+    public void testReadValuesFromApplicationController() throws Exception {
 
         Map<String, String> responseType = new HashMap<>();
 
@@ -126,18 +120,4 @@ public class VaultClientConfigTests {
         assertTrue(response.containsKey("vault-backend-name"));
     }
 
-    @Test
-    public void testReadValuesFromApplicationServerV2() throws Exception {
-
-        Map<String, String> responseType = new HashMap<>();
-
-        HttpRequest request = HttpRequest.GET("/test-vault");
-        Map<String, String> response = applicationServerHttpClient.toBlocking().retrieve(request, responseType.getClass());
-
-        assertNotNull(response);
-
-        assertTrue(response.containsKey("vault-backend-key-one"));
-        assertTrue(response.containsKey("vault-backend-kv-version"));
-        assertTrue(response.containsKey("vault-backend-name"));
-    }
 }
