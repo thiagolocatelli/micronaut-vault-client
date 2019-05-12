@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
+package io.micronaut.discovery.vault.config.client.v1.response;
+
+import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
+
+import java.util.Map;
+
 /**
- *  Vault Client Configuration.
+ *  Vault Response Envelope
  *
  *  @author Thiago Locatelli
  *  @author graemerocher
  *  @since 1.1.1
  */
-package io.micronaut.discovery.vault.config.client.response;
+public class VaultResponseV1 extends AbstractVaultResponse<Map<String, Object>> { }

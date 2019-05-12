@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package io.micronaut.discovery.vault.config.client.response;
+package io.micronaut.discovery.vault.config.client.v2.response;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.micronaut.core.annotation.Internal;
+import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
 
 import javax.annotation.concurrent.Immutable;
+import java.util.Collections;
 import java.util.Map;
 
 /**
- *  Vault Data object from {@link VaultResponse}
+ *  Vault Data object from {@link AbstractVaultResponse}
  *
  *  @author Thiago Locatelli
  *  @author graemerocher
@@ -28,6 +34,15 @@ import java.util.Map;
  */
 @Immutable
 public class VaultResponseData {
+
+    @JsonCreator
+    @Internal
+    protected VaultResponseData(@JsonProperty("data") Map<String, Object> data,
+                                @JsonProperty("source") Map<String, Object> metadata) {
+
+        this.data = data == null ? Collections.emptyMap() : Collections.unmodifiableMap(data);
+        this.metadata = metadata == null ? Collections.emptyMap() : Collections.unmodifiableMap(metadata);
+    }
 
     private Map<String, Object> data;
 

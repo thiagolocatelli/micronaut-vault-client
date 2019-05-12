@@ -19,8 +19,16 @@ package io.micronaut.discovery.vault.config.client.v2;
 import io.micronaut.context.annotation.BootstrapContextCompatible;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.discovery.vault.VaultClientConfiguration;
+import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
 import io.micronaut.discovery.vault.config.client.v2.condition.RequiresVaultClientConfigV2;
+import io.micronaut.discovery.vault.config.client.v2.response.VaultResponseV2;
+import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.client.annotation.Client;
+import io.micronaut.retry.annotation.Retryable;
+import org.reactivestreams.Publisher;
+
+import javax.annotation.Nonnull;
 
 /**
  *  A non-blocking HTTP client for Vault - KV v2.
@@ -33,7 +41,44 @@ import io.micronaut.http.client.annotation.Client;
 @Requires(beans = VaultClientConfiguration.class)
 @RequiresVaultClientConfigV2
 @BootstrapContextCompatible
-public interface VaultConfigHttpClientV2 extends VaultConfigV2Operations {
+public interface VaultConfigHttpClientV2 {
 
     String CLIENT_DESCRIPTION = "vault-config-client-v2";
+
+    /**
+     * Reads an application configuration from Spring Config Server.
+     *
+     * @param backend           The name of the secret engine in Vault
+     * @param applicationName   The application name
+     * @return A {@link Publisher} that emits a list of {@link AbstractVaultResponse}
+     */
+    @Get("/v1/{backend}/data/{applicationName}")
+    @Produces(single = true)
+    @Retryable(
+            attempts = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryCount:3}",
+            delay = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryDelay:1s}"
+    )
+    @Nonnull
+    Publisher<VaultResponseV2> readConfigurationValues(
+            @Nonnull String backend,
+            @Nonnull String applicationName);
+
+    /**
+     * Reads an application configuration from Spring Config Server.
+     *
+     * @param backend           The name of the secret engine in Vault
+     * @param applicationName   The application name
+     * @param profile           The active profiles
+     * @return A {@link Publisher} that emits a list of {@link AbstractVaultResponse}
+     */
+    @Get("/v1/{backend}/data/{applicationName}/{profile}")
+    @Produces(single = true)
+    @Retryable(
+            attempts = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryCount:3}",
+            delay = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryDelay:1s}"
+    )
+    @Nonnull Publisher<VaultResponseV2> readConfigurationValues(
+            @Nonnull String backend,
+            @Nonnull String applicationName,
+            @Nonnull String profile);
 }

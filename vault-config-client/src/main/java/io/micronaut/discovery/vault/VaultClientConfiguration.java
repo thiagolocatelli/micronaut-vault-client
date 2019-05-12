@@ -69,7 +69,7 @@ public class VaultClientConfiguration extends HttpClientConfiguration {
 
     private String uri = "http://locahost:8200";
     private String token;
-    private KV_VERSION kvVersion = KV_VERSION.V1;
+    private KV_VERSION kvVersion = KV_VERSION.V2;
     private String backend = "secret";
     private boolean failFast;
 

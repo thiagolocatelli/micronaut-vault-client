@@ -18,22 +18,15 @@ package io.micronaut.discovery.vault.config.client;
 
 import io.micronaut.context.env.Environment;
 import io.micronaut.context.env.PropertySource;
-import io.micronaut.core.util.CollectionUtils;
 import io.micronaut.discovery.config.ConfigurationClient;
 import io.micronaut.discovery.vault.VaultClientConfiguration;
-import io.micronaut.discovery.vault.config.client.response.VaultResponse;
-import io.micronaut.discovery.vault.config.client.response.VaultResponseData;
-import io.micronaut.http.HttpStatus;
-import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.runtime.ApplicationConfiguration;
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.functions.Function;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -69,44 +62,17 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
             return Flowable.empty();
         }
 
-        Function<Throwable, Publisher<? extends VaultResponse>> errorHandler = throwable -> {
-            if (throwable instanceof HttpClientResponseException) {
-                HttpClientResponseException httpClientResponseException = (HttpClientResponseException) throwable;
-                if (httpClientResponseException.getStatus() == HttpStatus.NOT_FOUND) {
-                    if (vaultClientConfiguration.isFailFast()) {
-                        return Flowable.error(new IllegalStateException(
-                                "Could not locate PropertySource and the fail fast property is set",
-                                throwable));
-                    }
-                    LOG.warn("Could not locate PropertySource: ", throwable);
-                    return Flowable.empty();
-                }
-            }
-            return Flowable.error(throwable);
-        };
+        final String applicationName = applicationConfiguration.getName().get();
+        final Set<String> activeNames = environment.getActiveNames();
 
-        List<Flowable<VaultResponse>> configurationValuesList = retrieveVaultProperties(vaultClientConfiguration,
-                applicationConfiguration, environment, errorHandler);
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Vault server endpoint: {}, secret engine version: {}", vaultClientConfiguration.getUri(),
+                    vaultClientConfiguration.getKvVersion());
+            LOG.info("Application name: {}, application profiles: {}", applicationName, activeNames);
+        }
 
-
-        Flowable<PropertySource> propertySourceFlowable = configurationValuesList.get(0).flatMap(vaultResponse -> Flowable.create(emitter -> {
-            VaultResponseData vaultResponseData = vaultResponse.getData();
-
-            if (CollectionUtils.isEmpty(vaultResponseData.getData())) {
-                emitter.onComplete();
-            } else {
-                int priority = Integer.MAX_VALUE;
-                //for (ConfigServerPropertySource propertySource : propertySources) {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Obtained property source [{}] from Spring Cloud Configuration Server", "vault");
-                }
-
-                emitter.onNext(PropertySource.of("Vault", vaultResponseData.getData(), priority));
-                priority -= 10;
-                //}
-                emitter.onComplete();
-            }
-        }, BackpressureStrategy.ERROR));
+        activeNames.add(applicationName);
+        Flowable<PropertySource> propertySourceFlowable = getProperySources(activeNames);
 
         if (executorService != null) {
             return propertySourceFlowable.subscribeOn(io.reactivex.schedulers.Schedulers.from(
@@ -119,15 +85,20 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
 
     /**
      *
-     * @param vaultClientConfiguration
-     * @param applicationConfiguration
-     * @param environment
-     * @param errorHandler
+     * @param activeNames
      * @return
      */
-    public abstract List<Flowable<VaultResponse>> retrieveVaultProperties(
-            VaultClientConfiguration vaultClientConfiguration,
-            ApplicationConfiguration applicationConfiguration,
-            Environment environment,
-            Function<Throwable, Publisher<? extends VaultResponse>> errorHandler);
+    protected abstract Flowable<PropertySource> getProperySources(Set<String> activeNames);
+
+    public ApplicationConfiguration getApplicationConfiguration() {
+        return this.applicationConfiguration;
+    }
+
+    public VaultClientConfiguration getVaultClientConfiguration() {
+        return this.vaultClientConfiguration;
+    }
+
+    public Environment getEnvironment() {
+        return this.environment;
+    }
 }

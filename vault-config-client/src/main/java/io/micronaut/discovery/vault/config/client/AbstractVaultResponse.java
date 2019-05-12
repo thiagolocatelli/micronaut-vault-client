@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.micronaut.discovery.vault.config.client.response;
+package io.micronaut.discovery.vault.config.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -30,9 +30,9 @@ import java.util.Map;
  *  @since 1.1.1
  */
 @Immutable
-public class VaultResponse {
+public class AbstractVaultResponse<T> {
 
-    private VaultResponseData data;
+    private T data;
 
     @JsonProperty("lease_duration")
     private Long leaseDuration;
@@ -50,11 +50,11 @@ public class VaultResponse {
 
     private List<String> warnings;
 
-    public VaultResponseData getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(VaultResponseData data) {
+    public void setData(T data) {
         this.data = data;
     }
 

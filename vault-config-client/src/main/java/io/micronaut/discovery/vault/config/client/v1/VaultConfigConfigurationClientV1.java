@@ -17,15 +17,12 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
 import io.micronaut.context.env.PropertySource;
 import io.micronaut.core.util.CollectionUtils;
-import io.micronaut.core.util.StringUtils;
 import io.micronaut.discovery.config.ConfigurationClient;
 import io.micronaut.discovery.vault.VaultClientConfiguration;
 import io.micronaut.discovery.vault.condition.RequiresVaultClientConfig;
 import io.micronaut.discovery.vault.config.client.AbstractVaultConfigConfigurationClient;
-import io.micronaut.discovery.vault.config.client.response.VaultResponseData;
 import io.micronaut.discovery.vault.config.client.v1.condition.RequiresVaultClientConfigV1;
-import io.micronaut.discovery.vault.config.client.response.VaultResponse;
-import io.micronaut.discovery.vault.config.client.v2.VaultConfigHttpClientV2;
+import io.micronaut.discovery.vault.config.client.v1.response.VaultResponseV1;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.runtime.ApplicationConfiguration;
@@ -38,13 +35,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  *  A {@link ConfigurationClient} for Vault Configuration.
@@ -86,26 +84,71 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
     }
 
     @Override
-    public List<Flowable<VaultResponse>> retrieveVaultProperties(VaultClientConfiguration vaultClientConfiguration,
-                                                                 ApplicationConfiguration applicationConfiguration,
-                                                                 Environment environment,
-                                                                 Function<Throwable, Publisher<? extends VaultResponse>> errorHandler) {
+    protected Flowable<PropertySource> getProperySources(Set<String> activeNames) {
 
-        String applicationName = applicationConfiguration.getName().get();
-        Set<String> activeNames = environment.getActiveNames();
+        Function<Throwable, Publisher<? extends VaultResponseV1>> errorHandler = getErrorHandler();
+        List<Flowable<VaultResponseV1>> configurationValuesList = retrieveVaultProperties(activeNames, errorHandler);
+        final AtomicInteger priority = new AtomicInteger(Integer.MAX_VALUE);
+        final AtomicInteger source = new AtomicInteger(0);
 
-        if (activeNames.isEmpty()) {
-            activeNames.add(Environment.DEVELOPMENT);
-        }
+        return Flowable.fromIterable(configurationValuesList).concatMapEager(vaultResponseFlowable -> {
+            return vaultResponseFlowable.flatMap(vaultResponse -> Flowable.create(emitter -> {
+                Map<String, Object> vaultResponseData = vaultResponse.getData();
+                if (!CollectionUtils.isEmpty(vaultResponseData)) {
+                    int innerPriority = 0;
+                    synchronized (source) {
+                        source.getAndIncrement();
+                        innerPriority = priority.getAndDecrement();
+                    }
 
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Vault server endpoint: {}, secret engine version: {}", vaultClientConfiguration.getUri(), vaultClientConfiguration.getKvVersion());
-            LOG.info("Application name: {}, application profiles: {}", applicationName, activeNames);
-        }
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info("Obtained property source from Vault, {}", vaultResponseData);
+                    }
+                    emitter.onNext(PropertySource.of("vault" + innerPriority, vaultResponseData, innerPriority));
+                }
 
-        return Arrays.asList(Flowable.fromPublisher(
-                vaultConfigClientV1.readConfiguratoinValues(vaultClientConfiguration.getBackend(), applicationName))
-                .onErrorResumeNext(errorHandler));
+                //if all items have been processed, emit onComplete
+                if (source.get() == configurationValuesList.size()) {
+                    emitter.onComplete();
+                }
+            }, BackpressureStrategy.ERROR));
+        });
+    }
+
+    private List<Flowable<VaultResponseV1>> retrieveVaultProperties(Set<String> activeNames, Function<Throwable,
+            Publisher<? extends VaultResponseV1>> errorHandler) {
+
+        String applicationName = getApplicationConfiguration().getName().get();
+        return activeNames.stream().map(activeName -> {
+            return activeName.equals(applicationName) ?
+                        Flowable.fromPublisher(
+                                vaultConfigClientV1.readConfigurationValues(getVaultClientConfiguration().getBackend(),
+                                        applicationName))
+                                .onErrorResumeNext(errorHandler) :
+                        Flowable.fromPublisher(
+                                vaultConfigClientV1.readConfigurationValues(getVaultClientConfiguration().getBackend(),
+                                        applicationName, activeName))
+                                .onErrorResumeNext(errorHandler);
+        }).collect(Collectors.toList());
+    }
+
+    private Function<Throwable, Publisher<? extends VaultResponseV1>>  getErrorHandler() {
+
+        return throwable -> {
+            if (throwable instanceof HttpClientResponseException) {
+                HttpClientResponseException httpClientResponseException = (HttpClientResponseException) throwable;
+                if (httpClientResponseException.getStatus() == HttpStatus.NOT_FOUND) {
+                    if (getVaultClientConfiguration().isFailFast()) {
+                        return Flowable.error(new IllegalStateException(
+                                "Could not locate PropertySource and the fail fast property is set",
+                                throwable));
+                    }
+                    LOG.warn("Could not locate PropertySource: ", throwable);
+                    return Flowable.empty();
+                }
+            }
+            return Flowable.error(throwable);
+        };
     }
 
     @Override

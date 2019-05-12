@@ -16,8 +16,9 @@
 
 package io.micronaut.discovery.vault.config.client.filter;
 
+import io.micronaut.context.annotation.BootstrapContextCompatible;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.discovery.vault.VaultClientConfiguration;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.discovery.vault.VaultClientConstants;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MutableHttpRequest;
@@ -35,16 +36,17 @@ import org.reactivestreams.Publisher;
  */
 @Filter("/v1/**")
 @Requires(property = VaultClientConstants.PREFIX + ".token")
+@BootstrapContextCompatible
 public class VaultHttpClientFilter implements HttpClientFilter {
 
-    private VaultClientConfiguration vaultClientConfiguration;
+    private String vaultToken;
 
-    public VaultHttpClientFilter(VaultClientConfiguration configuration ) {
-        this.vaultClientConfiguration = vaultClientConfiguration;
+    public VaultHttpClientFilter(@Value("${vault.client.token}") String vaultToken) {
+        this.vaultToken = vaultToken;
     }
 
     @Override
     public Publisher<? extends HttpResponse<?>> doFilter(MutableHttpRequest<?> request, ClientFilterChain chain) {
-        return chain.proceed(request.header(VaultClientConstants.X_VAULT_TOKEN_HEADER, vaultClientConfiguration.getToken()));
+        return chain.proceed(request.header(VaultClientConstants.X_VAULT_TOKEN_HEADER, vaultToken));
     }
 }

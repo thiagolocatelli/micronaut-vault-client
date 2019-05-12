@@ -1,5 +1,5 @@
 micronaut:
-    environments: test
+    environments: dev
     application:
         name: vault-config-sample
     config-client:
@@ -9,7 +9,7 @@ vault:
     client:
         config:
             enabled: true
-        uri: http://localhost:8200/
+        uri: http://192.168.1.88:8200
         token: vaulttoken
         kv-version: V1
         backend: backendv1

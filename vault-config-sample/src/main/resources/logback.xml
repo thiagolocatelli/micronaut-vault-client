@@ -14,6 +14,6 @@
 
     <logger name="io.micronaut.context.condition" level="INFO"/>
     <logger name="io.micronaut.discovery.vault" level="DEBUG"/>
-    <logger name="io.micronaut.http.client" level="DEBUG"/>
+    <logger name="io.micronaut.http.client" level="INFO"/>
 
 </configuration>
