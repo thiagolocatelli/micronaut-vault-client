@@ -1,13 +1,3 @@
-micronaut:
-    application:
-        name: vault-config-sample
-    server:
-        port: 8080
-
-application:
-    spring-config-sample:
-        prefix: application.yml
-
 endpoints:
     beans:
         enabled: true
