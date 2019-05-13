@@ -85,7 +85,7 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
 
     protected String getVaultSourceName(Set<String> activeNames, String currentActiveName) {
         for(String activeName : activeNames) {
-            if(activeName.equals(currentActiveName)) {
+            if(activeName.equals(currentActiveName) && !activeName.equals(getApplicationConfiguration().getName().get())) {
                 return "/" + getApplicationConfiguration().getName().get() + "/" + activeName;
             }
         }

@@ -6,3 +6,4 @@ target/
 .project
 *.iml
 dependency-reduced-pom.xml
+vault-config-sample/vault-config-sample
