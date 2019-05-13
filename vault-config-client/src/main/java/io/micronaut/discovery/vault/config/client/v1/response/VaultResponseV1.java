@@ -16,8 +16,12 @@
 
 package io.micronaut.discovery.vault.config.client.v1.response;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.micronaut.core.annotation.Internal;
 import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,4 +31,18 @@ import java.util.Map;
  *  @author graemerocher
  *  @since 1.1.1
  */
-public class VaultResponseV1 extends AbstractVaultResponse<Map<String, Object>> { }
+public class VaultResponseV1 extends AbstractVaultResponse<Map<String, Object>> {
+
+    @JsonCreator
+    @Internal
+    public VaultResponseV1(
+            @JsonProperty("data") Map<String, Object> data,
+            @JsonProperty("lease_duration") Long leaseDuration,
+            @JsonProperty("lease_id") String leaseId,
+            @JsonProperty("request_id") String requestId,
+            @JsonProperty("wrap_info") Map<String, String> wrapInfo,
+            @JsonProperty("renewable") boolean renewable,
+            @JsonProperty("warnings") List<String> warnings) {
+        super(data, leaseDuration, leaseId, requestId, wrapInfo, renewable, warnings);
+    }
+}

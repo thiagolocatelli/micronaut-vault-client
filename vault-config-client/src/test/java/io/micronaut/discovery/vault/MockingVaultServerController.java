@@ -82,8 +82,13 @@ public class MockingVaultServerController {
         properties.put("vault-backend-name", backend + (StringUtils.isNotEmpty(profile) ? "-" + profile : ""));
         properties.put("vault-backend-kv-version", "v1" + (StringUtils.isNotEmpty(profile) ? "-" + profile : ""));
 
-        VaultResponseV1 response = new VaultResponseV1();
-        response.setData(properties);
+        VaultResponseV1 response = new VaultResponseV1(properties,
+                null,
+                null,
+                null,
+                Collections.emptyMap(),
+                false,
+                Collections.emptyList());
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -107,8 +112,13 @@ public class MockingVaultServerController {
 
         VaultResponseData vaultResponseData = new VaultResponseData(properties, Collections.emptyMap());
 
-        VaultResponseV2 response = new VaultResponseV2();
-        response.setData(vaultResponseData);
+        VaultResponseV2 response = new VaultResponseV2(vaultResponseData,
+                null,
+                null,
+                null,
+                Collections.emptyMap(),
+                false,
+                Collections.emptyList());
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);

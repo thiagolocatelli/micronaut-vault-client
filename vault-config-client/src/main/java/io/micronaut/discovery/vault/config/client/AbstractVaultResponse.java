@@ -30,7 +30,7 @@ import java.util.Map;
  *  @since 1.1.1
  */
 @Immutable
-public class AbstractVaultResponse<T> {
+public abstract class AbstractVaultResponse<T> {
 
     private T data;
 
@@ -49,6 +49,22 @@ public class AbstractVaultResponse<T> {
     private boolean renewable;
 
     private List<String> warnings;
+
+    public AbstractVaultResponse(T data,
+                                 Long leaseDuration,
+                                 String leaseId,
+                                 String requestId,
+                                 Map<String, String> wrapInfo,
+                                 boolean renewable,
+                                 List<String> warnings) {
+        this.data = data;
+        this.leaseDuration = leaseDuration;
+        this.leaseId = leaseId;
+        this.requestId = requestId;
+        this.wrapInfo = wrapInfo;
+        this.renewable = renewable;
+        this.warnings = warnings;
+    }
 
     public T getData() {
         return data;
