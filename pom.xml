@@ -102,11 +102,16 @@
                         <arguments>
                             <argument>-noverify</argument>
                             <argument>-XX:TieredStopAtLevel=1</argument>
+                            <argument>-Dcom.sun.management.jmxremote</argument>
                             <argument>-classpath</argument>
                             <classpath/>
                             <argument>${exec.mainClass}</argument>
                         </arguments>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -121,11 +126,51 @@
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>io.micronaut</groupId>
+                                <artifactId>micronaut-graal</artifactId>
+                                <version>${micronaut.version}</version>
+                            </path>
+                            <path>
+                                <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-inject-java</artifactId>
+                                <version>${micronaut.version}</version>
+                            </path>
+                            <path>
+                                <groupId>io.micronaut</groupId>
+                                <artifactId>micronaut-validation</artifactId>
                                 <version>${micronaut.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
+                    <executions>
+                        <execution>
+                            <id>test-compile</id>
+                            <goals>
+                                <goal>testCompile</goal>
+                            </goals>
+                            <configuration>
+                                <compilerArgs>
+                                    <arg>-parameters</arg>
+                                </compilerArgs>
+                                <annotationProcessorPaths>
+                                    <path>
+                                        <groupId>io.micronaut</groupId>
+                                        <artifactId>micronaut-graal</artifactId>
+                                        <version>${micronaut.version}</version>
+                                    </path>
+                                    <path>
+                                        <groupId>io.micronaut</groupId>
+                                        <artifactId>micronaut-inject-java</artifactId>
+                                        <version>${micronaut.version}</version>
+                                    </path>
+                                    <path>
+                                        <groupId>io.micronaut</groupId>
+                                        <artifactId>micronaut-validation</artifactId>
+                                        <version>${micronaut.version}</version>
+                                    </path>
+                                </annotationProcessorPaths>
+                            </configuration>
+                        </execution>
+                </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

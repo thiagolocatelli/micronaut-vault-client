@@ -95,6 +95,7 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
 
         return Flowable.fromIterable(configurationValuesList).concatMapEager(pairVaultResponse -> {
             return pairVaultResponse.getRight().flatMap(vaultResponse -> Flowable.create(emitter -> {
+                String vaultSourceName = getVaultSourceName(activeNames, pairVaultResponse.getLeft());
                 Map<String, Object> vaultResponseData = vaultResponse.getData();
                 if (!CollectionUtils.isEmpty(vaultResponseData)) {
                     synchronized (source) {
@@ -102,10 +103,9 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
                     }
 
                     if (LOG.isInfoEnabled()) {
-                        LOG.info("Obtained property source from Vault-{}, {}", pairVaultResponse.getLeft(),
-                                vaultResponseData);
+                        LOG.info("Obtained property source from Vault, source={}", vaultSourceName);
                     }
-                    emitter.onNext(PropertySource.of("vault-" + pairVaultResponse.getLeft(),
+                    emitter.onNext(PropertySource.of(vaultSourceName,
                             vaultResponseData, Integer.MAX_VALUE - activeNamesList.indexOf(pairVaultResponse.getLeft())));
                 }
 

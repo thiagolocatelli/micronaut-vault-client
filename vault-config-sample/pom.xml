@@ -44,6 +44,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.oracle.substratevm</groupId>
+            <artifactId>svm</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>io.micronaut</groupId>
             <artifactId>micronaut-inject</artifactId>
             <scope>compile</scope>

@@ -83,11 +83,15 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
         }
     }
 
-    /**
-     *
-     * @param activeNames
-     * @return
-     */
+    protected String getVaultSourceName(Set<String> activeNames, String currentActiveName) {
+        for(String activeName : activeNames) {
+            if(activeName.equals(currentActiveName)) {
+                return "/" + getApplicationConfiguration().getName().get() + "/" + activeName;
+            }
+        }
+        return "/" + getApplicationConfiguration().getName().get();
+    }
+
     protected abstract Flowable<PropertySource> getProperySources(Set<String> activeNames);
 
     public ApplicationConfiguration getApplicationConfiguration() {
@@ -107,7 +111,7 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
         private L left;
         private R right;
 
-        public Pair(L left, R right) {
+        protected Pair(L left, R right) {
             this.left = left;
             this.right = right;
         }

@@ -55,8 +55,8 @@ public interface VaultConfigHttpClientV2 {
     @Get("/v1/{backend}/data/{applicationName}")
     @Produces(single = true)
     @Retryable(
-            attempts = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryCount:3}",
-            delay = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryDelay:1s}"
+            attempts = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retry-count:3}",
+            delay = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retry-celay:1s}"
     )
     @Nonnull
     Publisher<VaultResponseV2> readConfigurationValues(
@@ -74,8 +74,8 @@ public interface VaultConfigHttpClientV2 {
     @Get("/v1/{backend}/data/{applicationName}/{profile}")
     @Produces(single = true)
     @Retryable(
-            attempts = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryCount:3}",
-            delay = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retryDelay:1s}"
+            attempts = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retry-count:3}",
+            delay = "${" + VaultClientConfiguration.VaultClientConnectionPoolConfiguration.PREFIX + ".retry-delay:1s}"
     )
     @Nonnull Publisher<VaultResponseV2> readConfigurationValues(
             @Nonnull String backend,

@@ -98,19 +98,19 @@ public class VaultConfigConfigurationClientV2 extends AbstractVaultConfigConfigu
         final AtomicInteger source = new AtomicInteger(0);
         final List<String> activeNamesList = new ArrayList<>(activeNames);
 
-        return Flowable.fromIterable(configurationValuesList).concatMapEager(pairVaultResponse -> {
+        return Flowable.fromIterable(configurationValuesList).flatMap(pairVaultResponse -> {
             return pairVaultResponse.getRight().flatMap(vaultResponse -> Flowable.create(emitter -> {
                 VaultResponseData vaultResponseData = vaultResponse.getData();
                 if (!CollectionUtils.isEmpty(vaultResponseData.getData())) {
+                    String vaultSourceName = getVaultSourceName(activeNames, pairVaultResponse.getLeft());
                     synchronized (source) {
                         source.getAndIncrement();
                     }
 
                     if (LOG.isInfoEnabled()) {
-                        LOG.info("Obtained property source from Vault-{}, {}", pairVaultResponse.getLeft(),
-                                vaultResponseData.getData());
+                        LOG.info("Obtained property source from Vault, source={}", vaultSourceName);
                     }
-                    emitter.onNext(PropertySource.of("vault-" + pairVaultResponse.getLeft(),
+                    emitter.onNext(PropertySource.of(vaultSourceName,
                             vaultResponseData.getData(), Integer.MAX_VALUE - activeNamesList.indexOf(pairVaultResponse.getLeft())));
                 }
 
