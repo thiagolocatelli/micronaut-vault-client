@@ -21,6 +21,7 @@ import io.micronaut.discovery.config.ConfigurationClient;
 import io.micronaut.discovery.vault.VaultClientConfiguration;
 import io.micronaut.discovery.vault.condition.RequiresVaultClientConfig;
 import io.micronaut.discovery.vault.config.client.AbstractVaultConfigConfigurationClient;
+import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
 import io.micronaut.discovery.vault.config.client.v1.condition.RequiresVaultClientConfigV1;
 import io.micronaut.discovery.vault.config.client.v1.response.VaultResponseV1;
 import io.micronaut.http.HttpStatus;
@@ -37,10 +38,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -72,7 +70,7 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
      * @param environment               The environment
      * @param vaultUri                  Vault endpoint uri
      */
-        public VaultConfigConfigurationClientV1(VaultConfigHttpClientV1 vaultConfigClientV1,
+    public VaultConfigConfigurationClientV1(VaultConfigHttpClientV1 vaultConfigClientV1,
                                             VaultClientConfiguration vaultClientConfiguration,
                                             ApplicationConfiguration applicationConfiguration,
                                             Environment environment,
@@ -87,57 +85,61 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
     @Override
     protected Flowable<PropertySource> getProperySources(Set<String> activeNames) {
 
-        final Function<Throwable, Publisher<? extends VaultResponseV1>> errorHandler = getErrorHandler();
-        final List<PairVaultResponse> configurationValuesList = retrieveVaultProperties(activeNames, errorHandler);
-
-        final AtomicInteger source = new AtomicInteger(0);
+        final AtomicInteger sourceCount = new AtomicInteger(0);
         final List<String> activeNamesList = new ArrayList<>(activeNames);
 
+        final Function<Throwable, Publisher<? extends VaultResponseV1>> errorHandler = getErrorHandler(sourceCount);
+        final List<PairVaultResponse> configurationValuesList = retrieveVaultProperties(activeNames);
+
         return Flowable.fromIterable(configurationValuesList).concatMapEager(pairVaultResponse -> {
-            return pairVaultResponse.getRight().flatMap(vaultResponse -> Flowable.create(emitter -> {
-                String vaultSourceName = getVaultSourceName(activeNames, pairVaultResponse.getLeft());
-                Map<String, Object> vaultResponseData = vaultResponse.getData();
-                if (!CollectionUtils.isEmpty(vaultResponseData)) {
-                    synchronized (source) {
-                        source.getAndIncrement();
-                    }
+            return pairVaultResponse.getRight().onErrorResumeNext(errorHandler)
+                    .flatMap(vaultResponse -> Flowable.create(emitter -> {
 
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("Obtained property source from Vault, source={}", vaultSourceName);
-                    }
-                    emitter.onNext(PropertySource.of(vaultSourceName,
-                            vaultResponseData, Integer.MAX_VALUE - activeNamesList.indexOf(pairVaultResponse.getLeft())));
-                }
+                        String vaultSourceName = getVaultSourceName(activeNames, pairVaultResponse.getLeft());
+                        Map<String, Object> vaultResponseData = vaultResponse.getData();
 
-                //if all items have been processed, emit onComplete
-                if (source.get() == configurationValuesList.size()) {
-                    emitter.onComplete();
-                }
+                        synchronized (sourceCount) {
+                            sourceCount.getAndIncrement();
+                        }
+
+                        if (!CollectionUtils.isEmpty(vaultResponseData)) {
+                            if (LOG.isInfoEnabled()) {
+                                LOG.info("Obtained property source from Vault, source={}", vaultSourceName);
+                            }
+                            emitter.onNext(PropertySource.of(vaultSourceName,
+                                    vaultResponseData, Integer.MAX_VALUE - activeNamesList.indexOf(
+                                            pairVaultResponse.getLeft())));
+                        }
+
+                        //if all items have been processed, emit onComplete
+                        if (sourceCount.get() == configurationValuesList.size()) {
+                            emitter.onComplete();
+                        }
             }, BackpressureStrategy.ERROR));
         });
     }
 
-    private List<PairVaultResponse> retrieveVaultProperties(Set<String> activeNames, Function<Throwable,
-            Publisher<? extends VaultResponseV1>> errorHandler) {
-
+    private List<PairVaultResponse> retrieveVaultProperties(Set<String> activeNames) {
         final String applicationName = getApplicationConfiguration().getName().get();
+
         return activeNames.stream().map(activeName -> new PairVaultResponse(activeName,
                     activeName.equals(applicationName) ?
                         Flowable.fromPublisher(
                                 vaultConfigClientV1.readConfigurationValues(
-                                        getVaultClientConfiguration().getBackend(),
-                                        applicationName))
-                                .onErrorResumeNext(errorHandler) :
+                                    getVaultClientConfiguration().getBackend(), applicationName)) :
                         Flowable.fromPublisher(
                                 vaultConfigClientV1.readConfigurationValues(
-                                        getVaultClientConfiguration().getBackend(),
-                                        applicationName, activeName))
-                                .onErrorResumeNext(errorHandler))).collect(Collectors.toList());
+                                    getVaultClientConfiguration().getBackend(), applicationName, activeName))
+                )).collect(Collectors.toList());
     }
 
-    private Function<Throwable, Publisher<? extends VaultResponseV1>>  getErrorHandler() {
-
+    private Function<Throwable, Publisher<? extends VaultResponseV1>> getErrorHandler(AtomicInteger sourceCount) {
         return throwable -> {
+
+            synchronized (sourceCount) {
+                sourceCount.getAndIncrement();
+            }
+
             if (throwable instanceof HttpClientResponseException) {
                 HttpClientResponseException httpClientResponseException = (HttpClientResponseException) throwable;
                 if (httpClientResponseException.getStatus() == HttpStatus.NOT_FOUND) {
