@@ -12,6 +12,6 @@ vault:
             enabled: true
         uri: http://192.168.1.88:8200
         token: vaulttoken
-        kv-version: V1
-        backend: backendv1
+        kv-version: V2
+        backend: backendv2
         fail-fast: false

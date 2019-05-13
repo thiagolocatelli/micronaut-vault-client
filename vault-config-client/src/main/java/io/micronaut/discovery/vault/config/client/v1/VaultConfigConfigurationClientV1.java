@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -86,25 +87,26 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
     @Override
     protected Flowable<PropertySource> getProperySources(Set<String> activeNames) {
 
-        Function<Throwable, Publisher<? extends VaultResponseV1>> errorHandler = getErrorHandler();
-        List<Flowable<VaultResponseV1>> configurationValuesList = retrieveVaultProperties(activeNames, errorHandler);
-        final AtomicInteger priority = new AtomicInteger(Integer.MAX_VALUE);
-        final AtomicInteger source = new AtomicInteger(0);
+        final Function<Throwable, Publisher<? extends VaultResponseV1>> errorHandler = getErrorHandler();
+        final List<PairVaultResponse> configurationValuesList = retrieveVaultProperties(activeNames, errorHandler);
 
-        return Flowable.fromIterable(configurationValuesList).concatMapEager(vaultResponseFlowable -> {
-            return vaultResponseFlowable.flatMap(vaultResponse -> Flowable.create(emitter -> {
+        final AtomicInteger source = new AtomicInteger(0);
+        final List<String> activeNamesList = new ArrayList<>(activeNames);
+
+        return Flowable.fromIterable(configurationValuesList).concatMapEager(pairVaultResponse -> {
+            return pairVaultResponse.getRight().flatMap(vaultResponse -> Flowable.create(emitter -> {
                 Map<String, Object> vaultResponseData = vaultResponse.getData();
                 if (!CollectionUtils.isEmpty(vaultResponseData)) {
-                    int innerPriority = 0;
                     synchronized (source) {
                         source.getAndIncrement();
-                        innerPriority = priority.getAndDecrement();
                     }
 
                     if (LOG.isInfoEnabled()) {
-                        LOG.info("Obtained property source from Vault, {}", vaultResponseData);
+                        LOG.info("Obtained property source from Vault-{}, {}", pairVaultResponse.getLeft(),
+                                vaultResponseData);
                     }
-                    emitter.onNext(PropertySource.of("vault" + innerPriority, vaultResponseData, innerPriority));
+                    emitter.onNext(PropertySource.of("vault-" + pairVaultResponse.getLeft(),
+                            vaultResponseData, Integer.MAX_VALUE - activeNamesList.indexOf(pairVaultResponse.getLeft())));
                 }
 
                 //if all items have been processed, emit onComplete
@@ -115,11 +117,12 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
         });
     }
 
-    private List<Flowable<VaultResponseV1>> retrieveVaultProperties(Set<String> activeNames, Function<Throwable,
+    private List<PairVaultResponse> retrieveVaultProperties(Set<String> activeNames, Function<Throwable,
             Publisher<? extends VaultResponseV1>> errorHandler) {
 
-        String applicationName = getApplicationConfiguration().getName().get();
-        return activeNames.stream().map(activeName -> activeName.equals(applicationName) ?
+        final String applicationName = getApplicationConfiguration().getName().get();
+        return activeNames.stream().map(activeName -> new PairVaultResponse(activeName,
+                    activeName.equals(applicationName) ?
                         Flowable.fromPublisher(
                                 vaultConfigClientV1.readConfigurationValues(
                                         getVaultClientConfiguration().getBackend(),
@@ -129,7 +132,7 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
                                 vaultConfigClientV1.readConfigurationValues(
                                         getVaultClientConfiguration().getBackend(),
                                         applicationName, activeName))
-                                .onErrorResumeNext(errorHandler)).collect(Collectors.toList());
+                                .onErrorResumeNext(errorHandler))).collect(Collectors.toList());
     }
 
     private Function<Throwable, Publisher<? extends VaultResponseV1>>  getErrorHandler() {
@@ -154,5 +157,11 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
     @Override
     public String getDescription() {
         return VaultConfigHttpClientV1.CLIENT_DESCRIPTION;
+    }
+
+    private class PairVaultResponse extends Pair<String, Flowable<VaultResponseV1>> {
+        public PairVaultResponse(String left, Flowable<VaultResponseV1> right) {
+            super(left, right);
+        }
     }
 }
