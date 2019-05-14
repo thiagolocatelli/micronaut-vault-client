@@ -19,7 +19,6 @@ package io.micronaut.discovery.vault.config.client.v2;
 import io.micronaut.context.annotation.BootstrapContextCompatible;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.discovery.vault.VaultClientConfiguration;
-import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
 import io.micronaut.discovery.vault.config.client.v2.condition.RequiresVaultClientConfigV2;
 import io.micronaut.discovery.vault.config.client.v2.response.VaultResponseV2;
 import io.micronaut.http.annotation.Get;
@@ -43,6 +42,9 @@ import javax.annotation.Nonnull;
 @BootstrapContextCompatible
 public interface VaultConfigHttpClientV2 {
 
+    /**
+     * Vault Http Client description.
+     */
     String CLIENT_DESCRIPTION = "vault-config-client-v2";
 
     /**
@@ -50,7 +52,7 @@ public interface VaultConfigHttpClientV2 {
      *
      * @param backend           The name of the secret engine in Vault
      * @param applicationName   The application name
-     * @return A {@link Publisher} that emits a list of {@link AbstractVaultResponse}
+     * @return A {@link Publisher} that emits a list of {@link VaultResponseV2}
      */
     @Get("/v1/{backend}/data/{applicationName}")
     @Produces(single = true)
@@ -69,7 +71,7 @@ public interface VaultConfigHttpClientV2 {
      * @param backend           The name of the secret engine in Vault
      * @param applicationName   The application name
      * @param profile           The active profiles
-     * @return A {@link Publisher} that emits a list of {@link AbstractVaultResponse}
+     * @return A {@link Publisher} that emits a list of {@link VaultResponseV2}
      */
     @Get("/v1/{backend}/data/{applicationName}/{profile}")
     @Produces(single = true)

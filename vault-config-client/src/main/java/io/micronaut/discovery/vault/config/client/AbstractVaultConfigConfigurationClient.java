@@ -45,10 +45,18 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
     private Environment environment;
     private ExecutorService executorService;
 
-    public AbstractVaultConfigConfigurationClient(VaultClientConfiguration vaultClientConfiguration,
-                                                  ApplicationConfiguration applicationConfiguration,
-                                                  Environment environment,
-                                                  ExecutorService executorService) {
+    /**
+     * Default Constructor.
+     *
+     * @param vaultClientConfiguration  Vault Client Configuration
+     * @param applicationConfiguration  The application configuration
+     * @param environment               The environment
+     * @param executorService           Executor Service
+     */
+    public AbstractVaultConfigConfigurationClient(final VaultClientConfiguration vaultClientConfiguration,
+                                                  final ApplicationConfiguration applicationConfiguration,
+                                                  final Environment environment,
+                                                  final ExecutorService executorService) {
 
         this.vaultClientConfiguration = vaultClientConfiguration;
         this.applicationConfiguration = applicationConfiguration;
@@ -58,7 +66,7 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
 
     @Override
     public Publisher<PropertySource> getPropertySources(Environment environment) {
-        if(!vaultClientConfiguration.getDiscoveryConfiguration().isEnabled()) {
+        if (!vaultClientConfiguration.getDiscoveryConfiguration().isEnabled()) {
             return Flowable.empty();
         }
 
@@ -83,53 +91,84 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
         }
     }
 
+    /**
+     * Builds the property source name.
+     *
+     * @param activeNames Active environment names
+     * @param currentActiveName Current environment name being processed
+     * @return property source name
+     */
     protected String getVaultSourceName(Set<String> activeNames, String currentActiveName) {
-        for(String activeName : activeNames) {
-            if(activeName.equals(currentActiveName) && !activeName.equals(getApplicationConfiguration().getName().get())) {
+        for (String activeName : activeNames) {
+            if (activeName.equals(currentActiveName) && !activeName.equals(getApplicationConfiguration().getName().get())) {
                 return "/" + getApplicationConfiguration().getName().get() + "/" + activeName;
             }
         }
         return "/" + getApplicationConfiguration().getName().get();
     }
 
+    /**
+     * @param activeNames Active environment names
+     * @return The property sources
+     */
     protected abstract Flowable<PropertySource> getProperySources(Set<String> activeNames);
 
+    /**
+     * @return The Application Configuration
+     */
     public ApplicationConfiguration getApplicationConfiguration() {
         return this.applicationConfiguration;
     }
 
+    /**
+     * @return The Vault Client configuration
+     */
     public VaultClientConfiguration getVaultClientConfiguration() {
         return this.vaultClientConfiguration;
     }
 
+    /**
+     * @return The Environment
+     */
     public Environment getEnvironment() {
         return this.environment;
     }
 
+    /**
+     * Object holding a pair of objects.
+     *
+     * @param <L> Left object
+     * @param <R> Right object
+     */
     public class Pair<L, R> {
 
         private L left;
         private R right;
 
+        /**
+         * Default Constructor.
+         *
+         * @param left the left object
+         * @param right the right object
+         */
         protected Pair(L left, R right) {
             this.left = left;
             this.right = right;
         }
 
+        /**
+         * @return The left object
+         */
         public L getLeft() {
             return left;
         }
 
-        public void setLeft(L left) {
-            this.left = left;
-        }
-
+        /**
+         * @return The right object
+         */
         public R getRight() {
             return right;
         }
 
-        public void setRight(R right) {
-            this.right = right;
-        }
     }
 }

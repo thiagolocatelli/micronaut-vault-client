@@ -17,7 +17,7 @@
 package io.micronaut.discovery.vault;
 
 /**
- *  Vault Client Constants
+ *  Vault Client Constants.
  *
  *  @author thiagolocatelli
  *  @author graemerocher

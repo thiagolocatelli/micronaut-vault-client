@@ -26,7 +26,6 @@ import io.micronaut.discovery.config.ConfigurationClient;
 import io.micronaut.discovery.vault.VaultClientConfiguration;
 import io.micronaut.discovery.vault.condition.RequiresVaultClientConfig;
 import io.micronaut.discovery.vault.config.client.AbstractVaultConfigConfigurationClient;
-import io.micronaut.discovery.vault.config.client.v1.VaultConfigConfigurationClientV1;
 import io.micronaut.discovery.vault.config.client.v2.condition.RequiresVaultClientConfigV2;
 import io.micronaut.discovery.vault.config.client.v2.response.VaultResponseData;
 import io.micronaut.discovery.vault.config.client.v2.response.VaultResponseV2;
@@ -71,19 +70,21 @@ public class VaultConfigConfigurationClientV2 extends AbstractVaultConfigConfigu
     private final String vaultUri;
 
     /**
+     * Default Constructor.
      *
      * @param vaultConfigClientV2       Vault Config Http Client
      * @param vaultClientConfiguration  Vault Client Configuration
      * @param applicationConfiguration  The application configuration
      * @param environment               The environment
      * @param vaultUri                  Vault endpoint uri
+     * @param executorService           Executor Service
      */
-    public VaultConfigConfigurationClientV2(VaultConfigHttpClientV2 vaultConfigClientV2,
-                                            VaultClientConfiguration vaultClientConfiguration,
-                                            ApplicationConfiguration applicationConfiguration,
-                                            Environment environment,
-                                            @Value(VaultClientConfiguration.VAULT_CLIENT_CONFIG_ENDPOINT) String vaultUri,
-                                            @Named(TaskExecutors.IO) @Nullable ExecutorService executorService) {
+    public VaultConfigConfigurationClientV2(final VaultConfigHttpClientV2 vaultConfigClientV2,
+                                            final VaultClientConfiguration vaultClientConfiguration,
+                                            final ApplicationConfiguration applicationConfiguration,
+                                            final Environment environment,
+                                            @Value(VaultClientConfiguration.VAULT_CLIENT_CONFIG_ENDPOINT) final String vaultUri,
+                                            @Named(TaskExecutors.IO) @Nullable final ExecutorService executorService) {
 
         super(vaultClientConfiguration, applicationConfiguration, environment, executorService);
         this.vaultConfigClientV2 = vaultConfigClientV2;
@@ -126,6 +127,10 @@ public class VaultConfigConfigurationClientV2 extends AbstractVaultConfigConfigu
         });
     }
 
+    /**
+     * @param activeNames active environment names
+     * @return list of responses from vault
+     */
     private List<PairVaultResponse> retrieveVaultProperties(Set<String> activeNames) {
         final String applicationName = getApplicationConfiguration().getName().get();
 
@@ -140,6 +145,10 @@ public class VaultConfigConfigurationClientV2 extends AbstractVaultConfigConfigu
         )).collect(Collectors.toList());
     }
 
+    /**
+     * @param sourceCount total of property sources from vault
+     * @return the error handler to handle vault failed requests
+     */
     private Function<Throwable, Publisher<? extends VaultResponseV2>>  getErrorHandler(AtomicInteger sourceCount) {
         return throwable -> {
 
@@ -168,6 +177,9 @@ public class VaultConfigConfigurationClientV2 extends AbstractVaultConfigConfigu
         return VaultConfigHttpClientV2.CLIENT_DESCRIPTION;
     }
 
+    /**
+     * Wrapper for Vault Response.
+     */
     private class PairVaultResponse extends Pair<String, Flowable<VaultResponseV2>> {
         public PairVaultResponse(String left, Flowable<VaultResponseV2> right) {
             super(left, right);

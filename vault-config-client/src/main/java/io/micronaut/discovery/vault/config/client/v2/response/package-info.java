@@ -21,4 +21,4 @@
  *  @author graemerocher
  *  @since 1.1.1
  */
-package io.micronaut.discovery.vault;
+package io.micronaut.discovery.vault.config.client.v2.response;

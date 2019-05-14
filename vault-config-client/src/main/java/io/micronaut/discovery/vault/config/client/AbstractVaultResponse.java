@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *  Vault Response Envelope
+ *  Vault Response Envelope.
+ *
+ *  @param <T> type of the generic
  *
  *  @author thiagolocatelli
  *  @author graemerocher
@@ -50,13 +52,24 @@ public abstract class AbstractVaultResponse<T> {
 
     private List<String> warnings;
 
-    public AbstractVaultResponse(T data,
-                                 Long leaseDuration,
-                                 String leaseId,
-                                 String requestId,
-                                 Map<String, String> wrapInfo,
-                                 boolean renewable,
-                                 List<String> warnings) {
+    /**
+     * Constructor for AbstractVaultResponse.
+     *
+     * @param data The data object
+     * @param leaseDuration The token lease duration
+     * @param leaseId The token lease id
+     * @param requestId The vault request id
+     * @param wrapInfo The wrap info object
+     * @param renewable The flag indicating the vault token is renewable
+     * @param warnings The list of warnings
+     */
+    public AbstractVaultResponse(final T data,
+                                 final Long leaseDuration,
+                                 final String leaseId,
+                                 final String requestId,
+                                 final Map<String, String> wrapInfo,
+                                 final boolean renewable,
+                                 final List<String> warnings) {
         this.data = data;
         this.leaseDuration = leaseDuration;
         this.leaseId = leaseId;
@@ -66,59 +79,115 @@ public abstract class AbstractVaultResponse<T> {
         this.warnings = warnings;
     }
 
+    /**
+     * @return The data object
+     */
     public T getData() {
         return data;
     }
 
-    public void setData(T data) {
+    /**
+     * Set the data object.
+     *
+     * @param data the data object
+     */
+    public void setData(final T data) {
         this.data = data;
     }
 
+    /**
+     * @return The token lease duration
+     */
     public Long getLeaseDuration() {
         return leaseDuration;
     }
 
-    public void setLeaseDuration(Long leaseDuration) {
+    /**
+     * Set the token lease duration.
+     *
+     * @param leaseDuration token lease duration
+     */
+    public void setLeaseDuration(final Long leaseDuration) {
         this.leaseDuration = leaseDuration;
     }
 
+    /**
+     * @return The token lease id
+     */
     public String getLeaseId() {
         return leaseId;
     }
 
-    public void setLeaseId(String leaseId) {
+    /**
+     * Set the token release id.
+     *
+     * @param leaseId token release id
+     */
+    public void setLeaseId(final String leaseId) {
         this.leaseId = leaseId;
     }
 
+    /**
+     * @return The vault request id
+     */
     public String getRequestId() {
         return requestId;
     }
 
-    public void setRequestId(String requestId) {
+    /**
+     * Set the vault request id.
+     *
+     * @param requestId vault request id
+     */
+    public void setRequestId(final String requestId) {
         this.requestId = requestId;
     }
 
+    /**
+     * @return The wrap info object
+     */
     public Map<String, String> getWrapInfo() {
         return wrapInfo;
     }
 
-    public void setWrapInfo(Map<String, String> wrapInfo) {
+    /**
+     * Set the wrap info object.
+     *
+     * @param wrapInfo wrap info object
+     */
+    public void setWrapInfo(final Map<String, String> wrapInfo) {
         this.wrapInfo = wrapInfo;
     }
 
+    /**
+     * @return The flag indicating the vault token is renewable
+     */
     public boolean isRenewable() {
         return renewable;
     }
 
-    public void setRenewable(boolean renewable) {
+    /**
+     * Set the flag indicating the vault token is renewable.
+     *
+     * @param renewable flag indicating the vault token is renewable
+     */
+    public void setRenewable(final boolean renewable) {
         this.renewable = renewable;
     }
 
+    /**
+     * @return List of warning
+     */
     public List<String> getWarnings() {
         return warnings;
     }
 
-    public void setWarnings(List<String> warnings) {
+    /**
+     * Set the list of warnings.
+     *
+     * @param warnings list of warning
+     */
+    public void setWarnings(final List<String> warnings) {
         this.warnings = warnings;
     }
 }

@@ -37,13 +37,29 @@ import javax.inject.Inject;
 @BootstrapContextCompatible
 public class VaultClientConfiguration extends HttpClientConfiguration {
 
+    /**
+     * Vault Server Endpoint.
+     */
     public static final String VAULT_CLIENT_CONFIG_ENDPOINT = "${" + VaultClientConstants.PREFIX + ".uri}";
 
-    public enum KV_VERSION { V1, V2 };
+    /**
+     * Vault Backend Secret Engine versions.
+     */
+    public enum VaultKvVersion { V1, V2 };
 
     private final VaultClientConnectionPoolConfiguration vaultClientConnectionPoolConfiguration;
     private final VaultClientDiscoveryConfiguration vaultClientDiscoveryConfiguration = new VaultClientDiscoveryConfiguration();
 
+    private String uri = "http://locahost:8200";
+    private String token;
+    private VaultKvVersion kvVersion = VaultKvVersion.V2;
+    private String backend = "secret";
+    private boolean failFast;
+
+    /**
+     * @param vaultClientConnectionPoolConfiguration Vault Client Connection Pool Configuration
+     * @param applicationConfiguration Application Configuration
+     */
     @Inject
     public VaultClientConfiguration(VaultClientConnectionPoolConfiguration vaultClientConnectionPoolConfiguration, ApplicationConfiguration applicationConfiguration) {
         super(applicationConfiguration);
@@ -55,62 +71,105 @@ public class VaultClientConfiguration extends HttpClientConfiguration {
         return vaultClientConnectionPoolConfiguration;
     }
 
+    /**
+     * @return The discovery service configuration
+     */
     public VaultClientDiscoveryConfiguration getDiscoveryConfiguration() {
         return vaultClientDiscoveryConfiguration;
     }
 
-    @ConfigurationProperties(HttpClientConfiguration.ConnectionPoolConfiguration.PREFIX)
-    @BootstrapContextCompatible
-    public static class VaultClientConnectionPoolConfiguration extends HttpClientConfiguration.ConnectionPoolConfiguration { }
-
-    @ConfigurationProperties(ConfigDiscoveryConfiguration.PREFIX)
-    @BootstrapContextCompatible
-    public static class VaultClientDiscoveryConfiguration extends ConfigDiscoveryConfiguration { }
-
-    private String uri = "http://locahost:8200";
-    private String token;
-    private KV_VERSION kvVersion = KV_VERSION.V2;
-    private String backend = "secret";
-    private boolean failFast;
-
+    /**
+     * @return The Vault Server Uri
+     */
     public String getUri() {
         return uri;
     }
 
+    /**
+     * Set the Vault Server Uri.
+     *
+     * @param uri Vault Server Uri
+     */
     public void setUri(String uri) {
         this.uri = uri;
     }
 
+    /**
+     * @return The Vault authentication token
+     */
     public String getToken() {
         return token;
     }
 
+    /**
+     * Set the Vault authentication token.
+     *
+     * @param token Vault authentication token
+     */
     public void setToken(String token) {
         this.token = token;
     }
 
-    public KV_VERSION getKvVersion() {
+    /**
+     * @return The Backend Secret engine version
+     */
+    public VaultKvVersion getKvVersion() {
         return kvVersion;
     }
 
-    public void setKvVersion(KV_VERSION kvVersion) {
+    /**
+     * Set the version of the Backend Secret engine.
+     *
+     * @param kvVersion The version of the Backend Secret engine
+     */
+    public void setKvVersion(VaultKvVersion kvVersion) {
         this.kvVersion = kvVersion;
     }
 
+    /**
+     * @return The Backend Secret engine name
+     */
     public String getBackend() {
         return backend;
     }
 
+    /**
+     * Set the name of the Backend Secret engine.
+     *
+     * @param backend Backend Secret engine name
+     */
     public void setBackend(String backend) {
         this.backend = backend;
     }
 
+    /**
+     * @return Flag to indicate that failure to connect to HashiCorp Vault is fatal (default false).
+     */
     public boolean isFailFast() {
         return failFast;
     }
 
+    /**
+     * Set flag to indicate that failure to connect to HashiCorp Vault is fatal.
+     *
+     * @param failFast Flag to fail fast
+     */
     public void setFailFast(boolean failFast) {
         this.failFast = failFast;
     }
+
+    /**
+     * The Http Pool Connection Configuration class for Vault.
+     */
+    @ConfigurationProperties(ConnectionPoolConfiguration.PREFIX)
+    @BootstrapContextCompatible
+    public static class VaultClientConnectionPoolConfiguration extends ConnectionPoolConfiguration { }
+
+    /**
+     * The Discovery Configuration class for Vault.
+     */
+    @ConfigurationProperties(ConfigDiscoveryConfiguration.PREFIX)
+    @BootstrapContextCompatible
+    public static class VaultClientDiscoveryConfiguration extends ConfigDiscoveryConfiguration { }
 
 }

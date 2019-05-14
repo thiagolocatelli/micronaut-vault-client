@@ -28,7 +28,7 @@ import io.micronaut.http.filter.HttpClientFilter;
 import org.reactivestreams.Publisher;
 
 /**
- *  Vault Http Filter used to set auth token header
+ *  Vault Http Filter used to set auth token header.
  *
  *  @author thiagolocatelli
  *  @author graemerocher
@@ -41,12 +41,18 @@ public class VaultHttpClientFilter implements HttpClientFilter {
 
     private String vaultToken;
 
-    public VaultHttpClientFilter(@Value("${vault.client.token}") String vaultToken) {
+    /**
+     * @param vaultToken the vault token
+     */
+    public VaultHttpClientFilter(@Value("${vault.client.token}") final String vaultToken) {
         this.vaultToken = vaultToken;
     }
 
     @Override
-    public Publisher<? extends HttpResponse<?>> doFilter(MutableHttpRequest<?> request, ClientFilterChain chain) {
+    public Publisher<? extends HttpResponse<?>> doFilter(
+            final MutableHttpRequest<?> request,
+            final ClientFilterChain chain) {
+
         return chain.proceed(request.header(VaultClientConstants.X_VAULT_TOKEN_HEADER, vaultToken));
     }
 }

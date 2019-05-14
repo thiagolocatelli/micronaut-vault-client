@@ -19,10 +19,14 @@ package io.micronaut.discovery.vault.config.client.v1.condition;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.discovery.vault.VaultClientConstants;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
 
 /**
- *  <p>Meta annotation for Vault Client Config requirements</p>
+ *  <p>Meta annotation for Vault Client Config requirements</p>.
  *
  *  @author thiagolocatelli
  *  @author graemerocher

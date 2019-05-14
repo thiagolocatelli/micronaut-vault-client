@@ -1,12 +1,17 @@
 /*
- * Copyright (c) 2015 Transamerica Corporation. ("Transamerica" or "us"). All Rights Reserved.
+ * Copyright 2017-2019 original authors
  *
- * This software is the confidential and proprietary information of
- * Transamerica ("Confidential Information").
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * You shall not disclose such Confidential Information and shall use it only in
- * accordance with the terms of the license agreement you entered into
- * with Transamerica.
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package io.micronaut.discovery.vault.config.client.v1;
@@ -21,7 +26,6 @@ import io.micronaut.discovery.config.ConfigurationClient;
 import io.micronaut.discovery.vault.VaultClientConfiguration;
 import io.micronaut.discovery.vault.condition.RequiresVaultClientConfig;
 import io.micronaut.discovery.vault.config.client.AbstractVaultConfigConfigurationClient;
-import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
 import io.micronaut.discovery.vault.config.client.v1.condition.RequiresVaultClientConfigV1;
 import io.micronaut.discovery.vault.config.client.v1.response.VaultResponseV1;
 import io.micronaut.http.HttpStatus;
@@ -38,7 +42,10 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -63,19 +70,21 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
     private final String vaultUri;
 
     /**
+     * Default Constructor.
      *
      * @param vaultConfigClientV1       Vault Config Http Client
      * @param vaultClientConfiguration  Vault Client Configuration
      * @param applicationConfiguration  The application configuration
      * @param environment               The environment
      * @param vaultUri                  Vault endpoint uri
+     * @param executorService           Executor Service
      */
-    public VaultConfigConfigurationClientV1(VaultConfigHttpClientV1 vaultConfigClientV1,
-                                            VaultClientConfiguration vaultClientConfiguration,
-                                            ApplicationConfiguration applicationConfiguration,
-                                            Environment environment,
-                                            @Value(VaultClientConfiguration.VAULT_CLIENT_CONFIG_ENDPOINT) String vaultUri,
-                                            @Named(TaskExecutors.IO) @Nullable ExecutorService executorService) {
+    public VaultConfigConfigurationClientV1(final VaultConfigHttpClientV1 vaultConfigClientV1,
+                                            final VaultClientConfiguration vaultClientConfiguration,
+                                            final ApplicationConfiguration applicationConfiguration,
+                                            final Environment environment,
+                                            @Value(VaultClientConfiguration.VAULT_CLIENT_CONFIG_ENDPOINT) final String vaultUri,
+                                            @Named(TaskExecutors.IO) @Nullable final ExecutorService executorService) {
 
         super(vaultClientConfiguration, applicationConfiguration, environment, executorService);
         this.vaultConfigClientV1 = vaultConfigClientV1;
@@ -119,6 +128,10 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
         });
     }
 
+    /**
+     * @param activeNames active environment names
+     * @return list of responses from vault
+     */
     private List<PairVaultResponse> retrieveVaultProperties(Set<String> activeNames) {
         final String applicationName = getApplicationConfiguration().getName().get();
 
@@ -133,6 +146,10 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
                 )).collect(Collectors.toList());
     }
 
+    /**
+     * @param sourceCount total of property sources from vault
+     * @return the error handler to handle vault failed requests
+     */
     private Function<Throwable, Publisher<? extends VaultResponseV1>> getErrorHandler(AtomicInteger sourceCount) {
         return throwable -> {
 
@@ -161,6 +178,9 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
         return VaultConfigHttpClientV1.CLIENT_DESCRIPTION;
     }
 
+    /**
+     * Wrapper for Vault Response.
+     */
     private class PairVaultResponse extends Pair<String, Flowable<VaultResponseV1>> {
         public PairVaultResponse(String left, Flowable<VaultResponseV1> right) {
             super(left, right);

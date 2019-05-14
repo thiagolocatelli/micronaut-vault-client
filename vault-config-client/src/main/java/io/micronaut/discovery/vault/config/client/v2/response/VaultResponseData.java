@@ -19,14 +19,13 @@ package io.micronaut.discovery.vault.config.client.v2.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micronaut.core.annotation.Internal;
-import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Collections;
 import java.util.Map;
 
 /**
- *  Vault Data object from {@link AbstractVaultResponse}
+ *  Vault Data object.
  *
  *  @author thiagolocatelli
  *  @author graemerocher
@@ -35,32 +34,53 @@ import java.util.Map;
 @Immutable
 public class VaultResponseData {
 
+    private Map<String, Object> data;
+    private Map<String, Object> metadata;
+
+    /**
+     * Constructor for VaultResponseData.
+     *
+     * @param data The data map
+     * @param metadata The metadata map
+     */
     @JsonCreator
     @Internal
-    public VaultResponseData(@JsonProperty("data") Map<String, Object> data,
-                             @JsonProperty("metadata") Map<String, Object> metadata) {
+    public VaultResponseData(@JsonProperty("data") final Map<String, Object> data,
+                             @JsonProperty("metadata") final Map<String, Object> metadata) {
 
         this.data = data == null ? Collections.emptyMap() : Collections.unmodifiableMap(data);
         this.metadata = metadata == null ? Collections.emptyMap() : Collections.unmodifiableMap(metadata);
     }
 
-    private Map<String, Object> data;
-
-    private Map<String, Object> metadata;
-
+    /**
+     * @return The data map
+     */
     public Map<String, Object> getData() {
         return data;
     }
 
-    public void setData(Map<String, Object> data) {
+    /**
+     * Set the data map.
+     *
+     * @param data the data map
+     */
+    public void setData(final Map<String, Object> data) {
         this.data = data;
     }
 
+    /**
+     * @return The metadata map
+     */
     public Map<String, Object> getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(Map<String, Object> metadata) {
+    /**
+     * Set the metadata map.
+     *
+     * @param metadata the metadata map
+     */
+    public void setMetadata(final Map<String, Object> metadata) {
         this.metadata = metadata;
     }
 }

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *  Vault Response Envelope
+ *  Vault Response Envelope.
  *
  *  @author thiagolocatelli
  *  @author graemerocher
@@ -33,16 +33,29 @@ import java.util.Map;
  */
 public class VaultResponseV2 extends AbstractVaultResponse<VaultResponseData> {
 
+    /**
+     * Constructor for VaultResponseV2.
+     *
+     * @param data The data object
+     * @param leaseDuration The token lease duration
+     * @param leaseId The token lease id
+     * @param requestId The vault request id
+     * @param wrapInfo The wrap info object
+     * @param renewable The flag indicating the vault token is renewable
+     * @param warnings The list of warnings
+     */
     @JsonCreator
     @Internal
     public VaultResponseV2(
-            @JsonProperty("data") VaultResponseData data,
-            @JsonProperty("lease_duration") Long leaseDuration,
-            @JsonProperty("lease_id") String leaseId,
-            @JsonProperty("request_id") String requestId,
-            @JsonProperty("wrap_info") Map<String, String> wrapInfo,
-            @JsonProperty("renewable") boolean renewable,
-            @JsonProperty("warnings") List<String> warnings) {
-        super(data, leaseDuration, leaseId, requestId, wrapInfo, renewable, warnings);
+            @JsonProperty("data") final VaultResponseData data,
+            @JsonProperty("lease_duration") final Long leaseDuration,
+            @JsonProperty("lease_id") final String leaseId,
+            @JsonProperty("request_id") final String requestId,
+            @JsonProperty("wrap_info") final Map<String, String> wrapInfo,
+            @JsonProperty("renewable") final boolean renewable,
+            @JsonProperty("warnings") final List<String> warnings) {
+
+        super(data, leaseDuration, leaseId, requestId, wrapInfo, renewable,
+                warnings);
     }
 }
