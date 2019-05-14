@@ -28,7 +28,6 @@ import io.micronaut.discovery.vault.condition.RequiresVaultClientConfig;
 import io.micronaut.discovery.vault.config.client.AbstractVaultConfigConfigurationClient;
 import io.micronaut.discovery.vault.config.client.v1.condition.RequiresVaultClientConfigV1;
 import io.micronaut.discovery.vault.config.client.v1.response.VaultResponseV1;
-import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.runtime.ApplicationConfiguration;
 import io.micronaut.scheduling.TaskExecutors;
@@ -45,7 +44,6 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -54,8 +52,7 @@ import java.util.stream.Collectors;
  *  A {@link ConfigurationClient} for Vault Configuration.
  *
  *  @author thiagolocatelli
- *  @author graemerocher
- *  @since 1.1.1
+ *  @since 1.2.0
  */
 @Singleton
 @RequiresVaultClientConfig
@@ -92,32 +89,29 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
     }
 
     @Override
-    protected Flowable<PropertySource> getProperySources(Set<String> activeNames) {
+    protected Flowable<PropertySource> getProperySources() {
 
         final AtomicInteger sourceCount = new AtomicInteger(0);
-        final List<String> activeNamesList = new ArrayList<>(activeNames);
+        final List<String> activeVaultKeys = new ArrayList<>(buildVaultKeys());
 
         final Function<Throwable, Publisher<? extends VaultResponseV1>> errorHandler = getErrorHandler(sourceCount);
-        final List<PairVaultResponse> configurationValuesList = retrieveVaultProperties(activeNames);
+        final List<PairVaultResponse> configurationValuesList = retrieveVaultProperties(activeVaultKeys);
 
         return Flowable.fromIterable(configurationValuesList).concatMapEager(pairVaultResponse -> {
             return pairVaultResponse.getRight().onErrorResumeNext(errorHandler)
                     .flatMap(vaultResponse -> Flowable.create(emitter -> {
 
-                        String vaultSourceName = getVaultSourceName(activeNames, pairVaultResponse.getLeft());
                         Map<String, Object> vaultResponseData = vaultResponse.getData();
-
-                        synchronized (sourceCount) {
                             sourceCount.getAndIncrement();
-                        }
 
+                        int priority = Integer.MAX_VALUE - (activeVaultKeys.size() - activeVaultKeys.indexOf(pairVaultResponse.getLeft()));
                         if (!CollectionUtils.isEmpty(vaultResponseData)) {
                             if (LOG.isInfoEnabled()) {
-                                LOG.info("Obtained property source from Vault, source={}", vaultSourceName);
+                                LOG.info("Obtained property source from Vault, source={}", pairVaultResponse.getLeft());
                             }
-                            emitter.onNext(PropertySource.of(vaultSourceName,
-                                    vaultResponseData, Integer.MAX_VALUE - activeNamesList.indexOf(
-                                            pairVaultResponse.getLeft())));
+
+
+                            emitter.onNext(PropertySource.of(pairVaultResponse.getLeft(), vaultResponseData, priority));
                         }
 
                         //if all items have been processed, emit onComplete
@@ -129,20 +123,15 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
     }
 
     /**
-     * @param activeNames active environment names
      * @return list of responses from vault
      */
-    private List<PairVaultResponse> retrieveVaultProperties(Set<String> activeNames) {
-        final String applicationName = getApplicationConfiguration().getName().get();
-
-        return activeNames.stream().map(activeName -> new PairVaultResponse(activeName,
-                    activeName.equals(applicationName) ?
+    private List<PairVaultResponse> retrieveVaultProperties(List<String> vaultKeys) {
+        LOG.warn("Using Vault Keys: {}", vaultKeys);
+        return vaultKeys.stream().map(vaultKey -> new PairVaultResponse(vaultKey,
                         Flowable.fromPublisher(
                                 vaultConfigClientV1.readConfigurationValues(
-                                    getVaultClientConfiguration().getBackend(), applicationName)) :
-                        Flowable.fromPublisher(
-                                vaultConfigClientV1.readConfigurationValues(
-                                    getVaultClientConfiguration().getBackend(), applicationName, activeName))
+                                        getVaultClientConfiguration().getToken(),
+                                        getVaultClientConfiguration().getSecretEngineName(), vaultKey))
                 )).collect(Collectors.toList());
     }
 
@@ -152,22 +141,14 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
      */
     private Function<Throwable, Publisher<? extends VaultResponseV1>> getErrorHandler(AtomicInteger sourceCount) {
         return throwable -> {
-
-            synchronized (sourceCount) {
-                sourceCount.getAndIncrement();
-            }
-
+            sourceCount.getAndIncrement();
             if (throwable instanceof HttpClientResponseException) {
-                HttpClientResponseException httpClientResponseException = (HttpClientResponseException) throwable;
-                if (httpClientResponseException.getStatus() == HttpStatus.NOT_FOUND) {
-                    if (getVaultClientConfiguration().isFailFast()) {
-                        return Flowable.error(new IllegalStateException(
-                                "Could not locate PropertySource and the fail fast property is set",
-                                throwable));
-                    }
-                    LOG.warn("Could not locate PropertySource: ", throwable);
-                    return Flowable.empty();
+                if (getVaultClientConfiguration().isFailFast()) {
+                    return Flowable.error(new IllegalStateException(
+                            "Could not locate PropertySource and the fail fast property is set",
+                            throwable));
                 }
+                return Flowable.empty();
             }
             return Flowable.error(throwable);
         };

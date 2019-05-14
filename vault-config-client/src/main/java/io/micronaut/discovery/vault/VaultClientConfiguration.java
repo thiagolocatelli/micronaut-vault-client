@@ -29,8 +29,7 @@ import javax.inject.Inject;
  *  A {@link HttpClientConfiguration} for Vault Client.
  *
  *  @author thiagolocatelli
- *  @author graemerocher
- *  @since 1.1.1
+ *  @since 1.2.0
  */
 @RequiresVaultClientConfig
 @ConfigurationProperties(VaultClientConstants.PREFIX)
@@ -53,7 +52,7 @@ public class VaultClientConfiguration extends HttpClientConfiguration {
     private String uri = "http://locahost:8200";
     private String token;
     private VaultKvVersion kvVersion = VaultKvVersion.V2;
-    private String backend = "secret";
+    private String secretEngineName = "secret";
     private boolean failFast;
 
     /**
@@ -129,17 +128,17 @@ public class VaultClientConfiguration extends HttpClientConfiguration {
     /**
      * @return The Backend Secret engine name
      */
-    public String getBackend() {
-        return backend;
+    public String getSecretEngineName() {
+        return secretEngineName;
     }
 
     /**
      * Set the name of the Backend Secret engine.
      *
-     * @param backend Backend Secret engine name
+     * @param secretEngineName Backend Secret engine name
      */
-    public void setBackend(String backend) {
-        this.backend = backend;
+    public void setSecretEngineName(String secretEngineName) {
+        this.secretEngineName = secretEngineName;
     }
 
     /**

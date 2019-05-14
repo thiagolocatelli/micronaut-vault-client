@@ -17,6 +17,7 @@
 package io.micronaut.discovery.vault.config.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.micronaut.core.annotation.Introspected;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.List;
@@ -28,10 +29,10 @@ import java.util.Map;
  *  @param <T> type of the generic
  *
  *  @author thiagolocatelli
- *  @author graemerocher
- *  @since 1.1.1
+ *  @since 1.2.0
  */
 @Immutable
+@Introspected
 public abstract class AbstractVaultResponse<T> {
 
     private T data;

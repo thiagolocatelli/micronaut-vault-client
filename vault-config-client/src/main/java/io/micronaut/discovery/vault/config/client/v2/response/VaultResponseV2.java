@@ -19,8 +19,10 @@ package io.micronaut.discovery.vault.config.client.v2.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micronaut.core.annotation.Internal;
+import io.micronaut.core.annotation.Introspected;
 import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.List;
 import java.util.Map;
 
@@ -28,9 +30,10 @@ import java.util.Map;
  *  Vault Response Envelope.
  *
  *  @author thiagolocatelli
- *  @author graemerocher
- *  @since 1.1.1
+ *  @since 1.2.0
  */
+@Immutable
+@Introspected
 public class VaultResponseV2 extends AbstractVaultResponse<VaultResponseData> {
 
     /**

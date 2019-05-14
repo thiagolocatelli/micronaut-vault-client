@@ -10,8 +10,8 @@ vault:
     client:
         config:
             enabled: true
-        uri: http://172.17.0.2:8200
+        uri: http://127.0.0.1:8200
         token: vaulttoken
-        kv-version: V1
-        backend: backendv1
+        kv-version: V2
+        secret-engine-name: backendv2
         fail-fast: false

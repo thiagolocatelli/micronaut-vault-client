@@ -8,6 +8,11 @@ import io.micronaut.http.annotation.Get;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ *  Test Controller for Sample Test application.
+ *
+ *  @author thiagolocatelli
+ */
 @Controller
 @Requires(property = ApplicationTestController.ENABLED)
 public class ApplicationTestController {

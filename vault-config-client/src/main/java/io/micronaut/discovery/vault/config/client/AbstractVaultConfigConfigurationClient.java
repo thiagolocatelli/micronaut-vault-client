@@ -26,19 +26,19 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
  *  A {@link ConfigurationClient} for Vault Configuration.
  *
  *  @author thiagolocatelli
- *  @author graemerocher
- *  @since 1.1.1
+ *  @since 1.2.0
  */
 public abstract class AbstractVaultConfigConfigurationClient implements ConfigurationClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractVaultConfigConfigurationClient.class);
+    private static final String DEFAULT_APPLICATION = "application";
 
     private VaultClientConfiguration vaultClientConfiguration;
     private ApplicationConfiguration applicationConfiguration;
@@ -74,14 +74,14 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
         final Set<String> activeNames = environment.getActiveNames();
 
         if (LOG.isInfoEnabled()) {
-            LOG.info("Vault server endpoint: {}, secret engine version: {}", vaultClientConfiguration.getUri(),
-                    vaultClientConfiguration.getKvVersion());
+            LOG.info("Vault server endpoint: {}, secret engine version: {}, secret-engine-name: {}",
+                    vaultClientConfiguration.getUri(),
+                    vaultClientConfiguration.getKvVersion(),
+                    vaultClientConfiguration.getSecretEngineName());
             LOG.info("Application name: {}, application profiles: {}", applicationName, activeNames);
         }
 
-        activeNames.add(applicationName);
-        Flowable<PropertySource> propertySourceFlowable = getProperySources(activeNames);
-
+        Flowable<PropertySource> propertySourceFlowable = getProperySources();
         if (executorService != null) {
             return propertySourceFlowable.subscribeOn(io.reactivex.schedulers.Schedulers.from(
                     executorService
@@ -92,26 +92,28 @@ public abstract class AbstractVaultConfigConfigurationClient implements Configur
     }
 
     /**
-     * Builds the property source name.
+     * Builds the keys used to get vault properties.
      *
-     * @param activeNames Active environment names
-     * @param currentActiveName Current environment name being processed
-     * @return property source name
+     * @return list of vault keys
      */
-    protected String getVaultSourceName(Set<String> activeNames, String currentActiveName) {
-        for (String activeName : activeNames) {
-            if (activeName.equals(currentActiveName) && !activeName.equals(getApplicationConfiguration().getName().get())) {
-                return "/" + getApplicationConfiguration().getName().get() + "/" + activeName;
-            }
+    protected Set<String> buildVaultKeys() {
+
+        Set<String> vaultKeys = new LinkedHashSet<>(Arrays.asList());
+        vaultKeys.add(DEFAULT_APPLICATION);
+        vaultKeys.add(getApplicationConfiguration().getName().get());
+        List<String> listActiveNames = new ArrayList(getEnvironment().getActiveNames());
+
+        for(int i = listActiveNames.size() - 1; i >= 0;  i--) {
+            vaultKeys.add(DEFAULT_APPLICATION + "/" + listActiveNames.get(i));
+            vaultKeys.add(getApplicationConfiguration().getName().get() + "/" + listActiveNames.get(i));
         }
-        return "/" + getApplicationConfiguration().getName().get();
+        return vaultKeys;
     }
 
     /**
-     * @param activeNames Active environment names
      * @return The property sources
      */
-    protected abstract Flowable<PropertySource> getProperySources(Set<String> activeNames);
+    protected abstract Flowable<PropertySource> getProperySources();
 
     /**
      * @return The Application Configuration

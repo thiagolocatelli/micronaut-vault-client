@@ -29,8 +29,7 @@ import java.lang.annotation.ElementType;
  *  <p>Meta annotation for Vault Client Config requirements</p>.
  *
  *  @author thiagolocatelli
- *  @author graemerocher
- *  @since 1.1.1
+ *  @since 1.2.0
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
