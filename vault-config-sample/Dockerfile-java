@@ -1,0 +1,12 @@
+FROM adoptopenjdk/openjdk11:alpine-slim
+#FROM thiagolocatelli/openjdk11-hotspot:apline3.9-glibc
+#FROM openjdk:11.0.1-jre-slim-sid
+#FROM base-jlink-test
+
+COPY target/vault-config-sample-1.0.0.jar application.jar
+
+RUN echo $JAVA_HOME
+
+ENTRYPOINT ["java", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-jar", "application.jar"]

@@ -1,0 +1,10 @@
+$JAVA_HOME/bin/native-image -DXmx2048m --no-server -cp target/vault-config-sample-*.jar
+
+docker run -p 8080:8080 -e MICRONAUT_ENVIRONMENTS=dev,test,docker vault-config-sample-native
+
+docker run -p 8080:8080 -e MICRONAUT_ENVIRONMENTS=dev,test,docker vault-config-sample-java
+
+
+MICRONAUT_ENVIRONMENTS=test,docker,dev ./vault-config-sample
+
+java -Dmicronaut.environments=test,docker,dev -jar target/vault-config-sample-1.0.0.jar

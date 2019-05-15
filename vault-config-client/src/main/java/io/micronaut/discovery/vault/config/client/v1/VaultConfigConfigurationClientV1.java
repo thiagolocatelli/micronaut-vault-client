@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -102,14 +103,13 @@ public class VaultConfigConfigurationClientV1 extends AbstractVaultConfigConfigu
                     .flatMap(vaultResponse -> Flowable.create(emitter -> {
 
                         Map<String, Object> vaultResponseData = vaultResponse.getData();
-                            sourceCount.getAndIncrement();
+                        sourceCount.getAndIncrement();
 
                         int priority = Integer.MAX_VALUE - (activeVaultKeys.size() - activeVaultKeys.indexOf(pairVaultResponse.getLeft()));
                         if (!CollectionUtils.isEmpty(vaultResponseData)) {
                             if (LOG.isInfoEnabled()) {
                                 LOG.info("Obtained property source from Vault, source={}", pairVaultResponse.getLeft());
                             }
-
 
                             emitter.onNext(PropertySource.of(pairVaultResponse.getLeft(), vaultResponseData, priority));
                         }
