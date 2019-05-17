@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package io.micronaut.discovery.vault.config.client.v1.response;
+package io.micronaut.discovery.vault.config.v2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micronaut.core.annotation.Internal;
 import io.micronaut.core.annotation.Introspected;
-import io.micronaut.discovery.vault.config.client.AbstractVaultResponse;
+import io.micronaut.discovery.vault.config.AbstractVaultResponse;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.List;
@@ -34,10 +34,10 @@ import java.util.Map;
  */
 @Immutable
 @Introspected
-public class VaultResponseV1 extends AbstractVaultResponse<Map<String, Object>> {
+public class VaultResponseV2 extends AbstractVaultResponse<VaultResponseData> {
 
     /**
-     * Constructor for VaultResponseV1.
+     * Constructor for VaultResponseV2.
      *
      * @param data The data object
      * @param leaseDuration The token lease duration
@@ -49,8 +49,8 @@ public class VaultResponseV1 extends AbstractVaultResponse<Map<String, Object>> 
      */
     @JsonCreator
     @Internal
-    public VaultResponseV1(
-            @JsonProperty("data") final Map<String, Object> data,
+    public VaultResponseV2(
+            @JsonProperty("data") final VaultResponseData data,
             @JsonProperty("lease_duration") final Long leaseDuration,
             @JsonProperty("lease_id") final String leaseId,
             @JsonProperty("request_id") final String requestId,
@@ -60,5 +60,10 @@ public class VaultResponseV1 extends AbstractVaultResponse<Map<String, Object>> 
 
         super(data, leaseDuration, leaseId, requestId, wrapInfo, renewable,
                 warnings);
+    }
+
+    @Override
+    public Map<String, Object> getSecrets() {
+        return this.data.getData();
     }
 }

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.micronaut.discovery.vault.config.client;
+package io.micronaut.discovery.vault.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.micronaut.core.annotation.Introspected;
 
@@ -26,7 +27,7 @@ import java.util.Map;
 /**
  *  Vault Response Envelope.
  *
- *  @param <T> type of the generic
+ *  @param <T> type of the data
  *
  *  @author thiagolocatelli
  *  @since 1.2.0
@@ -35,23 +36,23 @@ import java.util.Map;
 @Introspected
 public abstract class AbstractVaultResponse<T> {
 
-    private T data;
+    protected T data;
 
     @JsonProperty("lease_duration")
-    private Long leaseDuration;
+    protected Long leaseDuration;
 
     @JsonProperty("lease_id")
-    private String leaseId;
+    protected String leaseId;
 
     @JsonProperty("request_id")
-    private String requestId;
+    protected String requestId;
 
     @JsonProperty("wrap_info")
-    private Map<String, String> wrapInfo;
+    protected Map<String, String> wrapInfo;
 
-    private boolean renewable;
+    protected boolean renewable;
 
-    private List<String> warnings;
+    protected List<String> warnings;
 
     /**
      * Constructor for AbstractVaultResponse.
@@ -82,6 +83,12 @@ public abstract class AbstractVaultResponse<T> {
 
     /**
      * @return The data object
+     */
+    @JsonIgnore
+    public abstract Map<String, Object> getSecrets();
+
+    /**
+     * @return The data
      */
     public T getData() {
         return data;

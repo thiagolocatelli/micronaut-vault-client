@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package io.micronaut.discovery.vault;
+package io.micronaut.discovery.vault.config;
 
 import io.micronaut.context.annotation.BootstrapContextCompatible;
 import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.discovery.config.ConfigDiscoveryConfiguration;
-import io.micronaut.discovery.vault.condition.RequiresVaultClientConfig;
 import io.micronaut.http.client.HttpClientConfiguration;
 import io.micronaut.runtime.ApplicationConfiguration;
 
@@ -31,18 +30,20 @@ import javax.inject.Inject;
  *  @author thiagolocatelli
  *  @since 1.2.0
  */
-@RequiresVaultClientConfig
-@ConfigurationProperties(VaultClientConstants.PREFIX)
+@ConfigurationProperties(VaultClientConfiguration.PREFIX)
 @BootstrapContextCompatible
 public class VaultClientConfiguration extends HttpClientConfiguration {
+
+    public static final String PREFIX = "vault.client";
+
 
     /**
      * Vault Server Endpoint.
      */
-    public static final String VAULT_CLIENT_CONFIG_ENDPOINT = "${" + VaultClientConstants.PREFIX + ".uri}";
+    public static final String VAULT_CLIENT_CONFIG_ENDPOINT = "${" + VaultClientConfiguration.PREFIX + ".uri}";
 
     /**
-     * Vault Backend Secret Engine versions.
+     * Vault Secret Engine versions.
      */
     public enum VaultKvVersion { V1, V2 };
 
@@ -53,7 +54,7 @@ public class VaultClientConfiguration extends HttpClientConfiguration {
     private String token;
     private VaultKvVersion kvVersion = VaultKvVersion.V2;
     private String secretEngineName = "secret";
-    private boolean failFast;
+    private boolean failFast = false;
 
     /**
      * @param vaultClientConnectionPoolConfiguration Vault Client Connection Pool Configuration
@@ -110,32 +111,32 @@ public class VaultClientConfiguration extends HttpClientConfiguration {
     }
 
     /**
-     * @return The Backend Secret engine version
+     * @return The Vault Secret engine version
      */
     public VaultKvVersion getKvVersion() {
         return kvVersion;
     }
 
     /**
-     * Set the version of the Backend Secret engine.
+     * Set the version of the Vault Secret engine.
      *
-     * @param kvVersion The version of the Backend Secret engine
+     * @param kvVersion The version of the Vault Secret engine
      */
     public void setKvVersion(VaultKvVersion kvVersion) {
         this.kvVersion = kvVersion;
     }
 
     /**
-     * @return The Backend Secret engine name
+     * @return The Vault Secret engine name
      */
     public String getSecretEngineName() {
         return secretEngineName;
     }
 
     /**
-     * Set the name of the Backend Secret engine.
+     * Set the name of the Vault Secret engine name.
      *
-     * @param secretEngineName Backend Secret engine name
+     * @param secretEngineName Vault Secret engine name
      */
     public void setSecretEngineName(String secretEngineName) {
         this.secretEngineName = secretEngineName;
@@ -169,6 +170,9 @@ public class VaultClientConfiguration extends HttpClientConfiguration {
      */
     @ConfigurationProperties(ConfigDiscoveryConfiguration.PREFIX)
     @BootstrapContextCompatible
-    public static class VaultClientDiscoveryConfiguration extends ConfigDiscoveryConfiguration { }
+    public static class VaultClientDiscoveryConfiguration extends ConfigDiscoveryConfiguration {
+
+        public static final String PREFIX = VaultClientConfiguration.PREFIX + "." + ConfigDiscoveryConfiguration.PREFIX;
+    }
 
 }
